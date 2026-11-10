@@ -10,6 +10,7 @@
   const CARD_GRIDS = ['.album-grid','.albums-grid','.library-grid','.playlist-grid','.artist-grid','.music-grid','.card-grid'];
   const ROW_LISTS = ['.song-list','.songs-list','.track-list','.tracks-list','.queue-list','.library-list'];
   let queued = false;
+  let pendingNodes = [];
 
   function nearFirstScreen(element) {
     const rect = element.getBoundingClientRect();
@@ -28,24 +29,36 @@
       if ('fetchPriority' in img) img.fetchPriority = critical ? 'auto' : 'low';
     }
   }
+  function matchingIncludingSelf(scope, selector) {
+    const matches = [];
+    if (scope?.nodeType === 1 && scope.matches?.(selector)) matches.push(scope);
+    if (scope?.querySelectorAll) matches.push(...scope.querySelectorAll(selector));
+    return matches;
+  }
   function optimizeLongCollections(scope) {
-    if (!scope?.querySelectorAll) return;
     for (const selector of CARD_GRIDS) {
-      for (const grid of scope.querySelectorAll(selector)) {
+      for (const grid of matchingIncludingSelf(scope, selector)) {
         for (let i = 8; i < grid.children.length; i++) grid.children[i].classList.add('mv91-velocity-card');
       }
     }
     for (const selector of ROW_LISTS) {
-      for (const list of scope.querySelectorAll(selector)) {
+      for (const list of matchingIncludingSelf(scope, selector)) {
         for (let i = 16; i < list.children.length; i++) list.children[i].classList.add('mv91-velocity-row');
       }
     }
   }
   function scan(scope) { optimizeImages(scope); optimizeLongCollections(scope); }
   function scheduleScan(node) {
-    if (!node || queued) return;
+    if (!node) return;
+    pendingNodes.push(node);
+    if (queued) return;
     queued = true;
-    const run = () => { queued = false; scan(node); };
+    const run = () => {
+      queued = false;
+      const batch = pendingNodes;
+      pendingNodes = [];
+      for (const pending of batch) scan(pending);
+    };
     if ('requestAnimationFrame' in window) requestAnimationFrame(run);
     else setTimeout(run, 16);
   }
