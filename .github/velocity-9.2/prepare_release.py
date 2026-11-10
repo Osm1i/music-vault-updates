@@ -160,7 +160,7 @@ TimeoutStartSec=600
         raise SystemExit("The package is missing static/sw.js")
     sw_text = sw.read_text(encoding="utf-8")
     updated, count = re.subn(
-        r"const CACHE=(['\\"])music-vault-shell-v\\d+-\\d+(?:-\\d+)?\\1",
+        r"""const CACHE=(['"])music-vault-shell-v\d+-\d+(?:-\d+)?\1""",
         "const CACHE='music-vault-shell-v9-2-0'",
         sw_text, count=1)
     if count != 1:
