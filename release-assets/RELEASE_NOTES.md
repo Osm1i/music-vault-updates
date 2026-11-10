@@ -1,21 +1,25 @@
-# Music Vault Vanguard 9.0 — The App Edition
+# Music Vault Vanguard 9.1.0 — Velocity Edition
 
-A major end-to-end visual and interaction redesign that makes Music Vault feel like a polished installed music app across desktop, iPhone and tablet.
+A performance-focused full app release on top of the Vanguard 9.0 redesign.
 
-## The experience
-- Unified dark-olive and champagne-gold design language with refined typography, app surfaces, buttons, cards and navigation.
-- Rebuilt desktop frame with a deliberate sidebar, cleaner top bar, persistent listening dock and stronger visual hierarchy.
-- Redesigned Listen Now home, editorial New and Radio pages, Favorites, Search and Library dashboards.
-- More cohesive Import, Queue, USB & Folders, Family Library, Profile, Settings and Update Center screens.
-- Redesigned album details and full-screen listening studio, with prominent controls and iPhone safe-area handling.
-- App-wide Quick Actions launcher: click its button or press Ctrl/⌘ + K (or / outside text fields) to jump to major areas, Now Playing, Queue or profiles.
-- Refreshed PWA metadata and app-shell cache while retaining the existing home-screen icon files.
+## Faster first view and library browsing
+- Native lazy loading for artwork and images below the first screen, so long albums and library pages do not compete with visible content during startup.
+- Asynchronous image decoding to reduce image work on the main rendering path.
+- Browser-native fetch priority keeps visible content ahead of below-the-fold artwork.
+- One bounded MutationObserver handles dynamically added library items without polling or repeatedly rescanning the entire page.
+- CSS content-visibility defers rendering work for long album grids and song/track lists.
+- A refreshed PWA cache version ensures the new performance layer is loaded after the update.
+
+## App polish
+- More consistent keyboard focus visibility.
+- Honors reduced-motion preferences.
+- Keeps the existing Vanguard 9.0 visual system and Home Screen identity.
 
 ## Compatibility and data safety
-- The installer patches existing page markup additively; it does not replace the original template.
-- Preserves player markup, routes, audio engine, 10-band EQ, profile chooser, personal profiles, playlists, favorites, family data, downloader, import queue and backend APIs.
-- This is a presentation/PWA update. It does not replace app.py, databases, music folders, profile data or server configuration.
-- The existing update agent creates a code-only rollback snapshot before installation and restores it if the installer or health check fails.
+- Additive changes only: the existing index template is patched with two new asset references; it is not replaced.
+- Preserves the existing player, audio engine, 10-band EQ, profile chooser, playlists, favorites, family data, downloader, import queue, backend routes, databases and music folders.
+- No personal data or credentials are included in the release package.
+- The existing updater still verifies the release SHA-256, makes a code-only backup, installs, restarts and performs its health check with rollback on failure.
 
 ## Install
-Open Music Vault → Settings → Update Center → Check now → Install update. The server downloads the private release, verifies its SHA-256 digest, makes its backup, installs the update and restarts the service.
+Open Music Vault → Settings → Update Center → Check now → Install update.
