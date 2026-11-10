@@ -1,7 +1,8 @@
-Music Vault Vanguard 9.1.0 — additive Velocity Edition payload
-- Preserves the full Vanguard 9.0 visual layer and existing page markup.
-- Adds static/mv91-velocity.css and static/mv91-velocity.js for native lazy media loading, asynchronous image decoding, long-library rendering containment, focus visibility and reduced-motion accessibility.
-- Advances the PWA service-worker cache to v9.1.0.
-- Installer adds the two performance assets to the existing index page without replacing the template.
-- Rebuilds SHA256SUMS_9_0.txt for the complete package to retain the existing installer contract.
-- No backend, music, database, profile, playlist, favorite, EQ or credential files are included.
+Music Vault Vanguard 9.2.0 — Update Center Repair and Settings Privacy
+- Retains Vanguard 9.0 design and Vanguard 9.1 Velocity rendering assets.
+- Adds static/mv92-update-center.js for install progress, result feedback, refresh after install, and hiding CasaOS/GitHub credential configuration from the visible Settings screen.
+- Replaces musicvault_update_routes.py with systemd-backed check/install launch and fixed public-release channel configuration.
+- Adds systemd/music-vault-update-install.service.
+- Adds narrowly-scoped sudoers permissions for starting update-check and update-install units only.
+- Advances the service-worker cache to v9.2.0 and regenerates the package SHA-256 manifest.
+- Excludes music, SQLite databases, profiles, playlists, favorites, EQ settings, credentials, and backups.
