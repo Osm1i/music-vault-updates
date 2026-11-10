@@ -178,7 +178,7 @@ TimeoutStartSec=600
     wrapper = r'''#!/usr/bin/env bash
 set -Eeuo pipefail
 MV92_APP="/opt/music-vault"
-MV92_PACKAGE_DIR="$(CDPATH= cd -- "$(dirname -- "__MV92_BASH_SOURCE__")" && pwd)"
+MV92_PACKAGE_DIR=$(dirname "$0")
 
 # Run the already-tested Vanguard 9.1 installer unchanged first.
 bash "$MV92_PACKAGE_DIR/install-update-legacy.sh"
@@ -205,9 +205,11 @@ os.replace(tmp, p)
 os.chmod(p, 0o600)
 MV92_CONFIG
 
-MV92_APP_USER="$(systemctl show -p User --value music-vault.service 2>/dev/null || true)"
-if [ -z "$MV92_APP_USER" ]; then MV92_APP_USER="$(stat -c %U "$MV92_APP"); fi
-MV92_SYSTEMCTL="$(command -v systemctl)"
+MV92_APP_USER=$(systemctl show -p User --value music-vault.service 2>/dev/null || true)
+if [ -z "$MV92_APP_USER" ]; then
+    MV92_APP_USER=$(stat -c %U /opt/music-vault)
+fi
+MV92_SYSTEMCTL=$(command -v systemctl)
 printf '%s ALL=(root) NOPASSWD: %s start --no-block music-vault-update-check.service, %s start --no-block music-vault-update-install.service\n' "$MV92_APP_USER" "$MV92_SYSTEMCTL" "$MV92_SYSTEMCTL" > /etc/sudoers.d/music-vault-update-center
 chmod 0440 /etc/sudoers.d/music-vault-update-center
 visudo -cf /etc/sudoers.d/music-vault-update-center
@@ -237,7 +239,6 @@ done
 echo "ERROR: Music Vault did not pass the post-update health check." >&2
 exit 1
 '''
-    wrapper = wrapper.replace("__MV92_BASH_SOURCE__", chr(36) + "{BASH_SOURCE[0]}")
     installer.write_text(wrapper, encoding="utf-8")
     installer.chmod(0o755)
     (stage / "MUSIC_VAULT_RELEASE_VERSION.txt").write_text(VERSION + "\n", encoding="utf-8")
