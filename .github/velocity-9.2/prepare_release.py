@@ -219,7 +219,7 @@ MV92_HTML_PATCH
         rows.append(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.relative_to(stage).as_posix()}\n")
     checksum.write_text("".join(rows), encoding="utf-8")
 
-    if "systemctl start --no-block" not in ROUTES or '"token": ""' not in ROUTES:
+    if '"--no-block"' not in ROUTES or '"token": ""' not in ROUTES:
         raise SystemExit("Update route hardening smoke check failed.")
     if "mv92-update-center.js" not in installer.read_text(encoding="utf-8"):
         raise SystemExit("Installer UI hook was not injected.")
