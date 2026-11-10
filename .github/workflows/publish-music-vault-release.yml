@@ -60,6 +60,7 @@ jobs:
             exit 2
           fi
           bash -n dist/stage/install-update.sh
+          if [[ "$VERSION" == "9.2.0" ]]; then bash -n dist/stage/install-update-legacy.sh; fi
 
           test -f dist/stage/static/mv91-velocity.css
           test -f dist/stage/static/mv91-velocity.js
