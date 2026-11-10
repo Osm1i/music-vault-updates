@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "release-assets/**"
+      - "release-assets/MUSIC_VAULT_RELEASE_VERSION.txt"
   workflow_dispatch:
 
 permissions:
@@ -42,7 +42,13 @@ jobs:
           base64 --decode dist/package.tar.gz.b64 > dist/package.tar.gz
           gzip -t dist/package.tar.gz
           tar -xzf dist/package.tar.gz -C dist/stage
+          python3 .github/velocity-9.1/prepare_release.py dist/stage "$VERSION"
+          python3 -m py_compile .github/velocity-9.1/prepare_release.py
+          bash -n dist/stage/install-update.sh
+          node --check dist/stage/static/mv91-velocity.js
 
+          test -f dist/stage/static/mv91-velocity.css
+          test -f dist/stage/static/mv91-velocity.js
           test -f dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
           PACKAGE_VERSION="$(tr -d '\r\n' < dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt)"
           if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
