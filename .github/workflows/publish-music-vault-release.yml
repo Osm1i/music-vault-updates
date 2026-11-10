@@ -21,7 +21,6 @@ jobs:
     steps:
       - name: Check out release source
         uses: actions/checkout@v4
-
       - name: Build verified release assets
         id: build
         shell: bash
@@ -32,11 +31,15 @@ jobs:
             echo "Invalid stable semantic version: $VERSION" >&2
             exit 2
           fi
-
-          test -s release-assets/music-vault-update-package.tar.gz.b64
           rm -rf dist
           mkdir -p dist/stage
-          base64 --decode release-assets/music-vault-update-package.tar.gz.b64 > dist/package.tar.gz
+          mapfile -t PARTS < <(find release-assets/package-b64 -maxdepth 1 -type f -name 'part-*' -print | sort)
+          if [ "\${#PARTS[@]}" -ne 5 ]; then
+            echo "Expected five base64 archive parts; found \${#PARTS[@]}." >&2
+            exit 2
+          fi
+          for part in "\${PARTS[@]}"; do cat "$part"; done > dist/package.tar.gz.b64
+          base64 --decode dist/package.tar.gz.b64 > dist/package.tar.gz
           gzip -t dist/package.tar.gz
           tar -xzf dist/package.tar.gz -C dist/stage
 
@@ -61,7 +64,6 @@ jobs:
             NOTES="Music Vault stable release $VERSION."
             printf '%s\n' "$NOTES" > dist/RELEASE_NOTES.md
           fi
-
           python3 - "$VERSION" "$SHA256" "$NOTES" > dist/music-vault-update-manifest.json <<'PY'
           import json, sys
           version, digest, notes = sys.argv[1:4]
@@ -73,12 +75,10 @@ jobs:
               "notes": notes[:4000]
           }, indent=2))
           PY
-
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
           cat dist/music-vault-update-manifest.json
-
       - name: Publish GitHub Release
         env:
           GH_TOKEN: \${{ github.token }}
