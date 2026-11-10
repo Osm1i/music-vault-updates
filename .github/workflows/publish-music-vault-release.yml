@@ -21,6 +21,7 @@ jobs:
     steps:
       - name: Check out release source
         uses: actions/checkout@v4
+
       - name: Build verified release assets
         id: build
         shell: bash
@@ -31,13 +32,26 @@ jobs:
             echo "Invalid stable semantic version: $VERSION" >&2
             exit 2
           fi
-          test -f release-assets/package/install-update.sh
+
+          test -s release-assets/music-vault-update-package.tar.gz.b64
           rm -rf dist
           mkdir -p dist/stage
-          cp -a release-assets/package/. dist/stage/
-          cp release-assets/MUSIC_VAULT_RELEASE_VERSION.txt dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+          base64 --decode release-assets/music-vault-update-package.tar.gz.b64 > dist/package.tar.gz
+          gzip -t dist/package.tar.gz
+          tar -xzf dist/package.tar.gz -C dist/stage
+
+          test -f dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+          PACKAGE_VERSION="$(tr -d '\r\n' < dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt)"
+          if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
+            echo "Repository and package versions do not match." >&2
+            exit 2
+          fi
           test -f dist/stage/install-update.sh
+          test -f dist/stage/SHA256SUMS_9_0.txt
+          test -f dist/stage/static/mv90-app.css
+          test -f dist/stage/static/mv90-app.js
           (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+
           SHA256="$(sha256sum dist/music-vault-casaos-update.zip | awk '{print $1}')"
           NOTES_FILE="release-assets/RELEASE_NOTES.md"
           if [ -f "$NOTES_FILE" ]; then
@@ -47,6 +61,7 @@ jobs:
             NOTES="Music Vault stable release $VERSION."
             printf '%s\n' "$NOTES" > dist/RELEASE_NOTES.md
           fi
+
           python3 - "$VERSION" "$SHA256" "$NOTES" > dist/music-vault-update-manifest.json <<'PY'
           import json, sys
           version, digest, notes = sys.argv[1:4]
@@ -58,20 +73,22 @@ jobs:
               "notes": notes[:4000]
           }, indent=2))
           PY
+
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
           cat dist/music-vault-update-manifest.json
+
       - name: Publish GitHub Release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: \${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          TAG="${{ steps.build.outputs.tag }}"
+          TAG="\${{ steps.build.outputs.tag }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/music-vault-casaos-update.zip dist/music-vault-update-manifest.json --clobber
           else
-            gh release create "$TAG" dist/music-vault-casaos-update.zip dist/music-vault-update-manifest.json --title "Music Vault ${{ steps.build.outputs.version }}" --notes-file dist/RELEASE_NOTES.md --target "$GITHUB_SHA"
+            gh release create "$TAG" dist/music-vault-casaos-update.zip dist/music-vault-update-manifest.json --title "Music Vault \${{ steps.build.outputs.version }}" --notes-file dist/RELEASE_NOTES.md --target "$GITHUB_SHA"
           fi
-          echo "Published $TAG with SHA-256 ${{ steps.build.outputs.sha256 }}"
+          echo "Published $TAG with SHA-256 \${{ steps.build.outputs.sha256 }}"

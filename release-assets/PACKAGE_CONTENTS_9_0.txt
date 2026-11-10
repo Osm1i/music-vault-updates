@@ -1,0 +1,7 @@
+Music Vault Vanguard 9.0.0 — additive release payload
+- static/mv90-app.css and static/mv90-app.js: complete additive app design layer
+- static/sw.js and static/manifest.webmanifest: v9.0 cache and PWA metadata
+- install-update.sh: syntax, markup, hash, HTTP health checks, and additive page patcher
+- MUSIC_VAULT_RELEASE_VERSION.txt and SHA256SUMS_9_0.txt
+The existing templates/index.html is patched additively during install; it is not replaced.
+No backend, music, database, profile, playlist, favorite, EQ or credential files are included.

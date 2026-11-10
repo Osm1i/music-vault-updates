@@ -6,15 +6,15 @@ Repository: Osm1i/music-vault-updates
 
 A push to main that changes files under release-assets/ starts the GitHub Actions workflow at .github/workflows/publish-music-vault-release.yml.
 
-The workflow reads the semantic version, packages release-assets/package/ into a flat ZIP with MUSIC_VAULT_RELEASE_VERSION.txt at its root, calculates SHA-256, creates the updater manifest, and publishes stable release vX.Y.Z with the two required assets.
+The workflow decodes release-assets/music-vault-update-package.tar.gz.b64, verifies the gzip archive and embedded version, creates the flat updater ZIP, calculates its SHA-256, generates music-vault-update-manifest.json, and publishes stable release vX.Y.Z.
 
-## Requirements for each real future update
+## Requirements for future releases
 
-- Increase the semantic version and never reuse a release tag.
-- Put the complete transactional install-update.sh and every required application file in release-assets/package/.
-- Keep release-assets/MUSIC_VAULT_RELEASE_VERSION.txt matched to the release version.
-- Back up every changed app file, keep user data out of packages, test before restart where practical, restart music-vault.service, verify http://127.0.0.1:8788/, and restore changed files if anything fails.
+- Increase release-assets/MUSIC_VAULT_RELEASE_VERSION.txt using semantic version format and never reuse a published tag.
+- Replace release-assets/music-vault-update-package.tar.gz.b64 with the base64-encoded gzip tar archive of the complete package.
+- Ensure the package contains MUSIC_VAULT_RELEASE_VERSION.txt, SHA256SUMS_9_0.txt (or the matching new version checksum list), and install-update.sh at its root.
+- The installer must back up every changed app file, leave user data out of the package, run checks before restart, restart music-vault.service, verify http://127.0.0.1:8788/, and fail cleanly so the updater can roll back.
 - Never include music, SQLite databases, profiles, playlists, favorites, EQ settings, tokens, secrets, or backups.
-- Commit the updated release-assets/ files to main; GitHub Actions publishes the release automatically.
+- Update release-assets/RELEASE_NOTES.md, then commit the version, archive and notes to main. GitHub Actions publishes the release assets automatically.
 
-The initial v8.12.1 release is a baseline-only no-op because that version is already installed.
+The v8.12.1 release is the initial baseline. Vanguard 9.0.0 is the first full app-design release.
