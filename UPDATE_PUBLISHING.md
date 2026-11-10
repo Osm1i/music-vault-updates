@@ -1,22 +1,21 @@
 # Music Vault update publishing
 
-Release channel: `Osm1i/music-vault-updates`
+Release channel: `Osm1i/music-vault-updates`.
 
-## Stable releases
+The workflow in `.github/workflows/publish-music-vault-release.yml` assembles the versioned package from the ordered compressed archive chunks, applies the matching additive release-preparation scripts, verifies archive integrity and syntax, regenerates SHA-256 checksums, and publishes the ZIP and manifest.
 
-The workflow in `.github/workflows/publish-music-vault-release.yml` rebuilds a release from the ordered archive chunks under `release-assets/package-b64/`. It validates the gzip archive, extracts the release package, runs the version-specific preparation script, verifies JavaScript and shell syntax, recalculates package SHA-256 checksums, builds the CasaOS ZIP and publishes the stable release.
+## Vanguard 9.2.0
 
-To publish the next release, update all package chunks and notes first, then update `release-assets/MUSIC_VAULT_RELEASE_VERSION.txt` last. That final version-file commit triggers the workflow.
+The 9.2 release applies the 9.1 Velocity asset layer, then adds:
+- A dedicated systemd install service for user-triggered updates.
+- A restricted sudoers grant for starting only the update-check and update-install services.
+- A route implementation that starts systemd units synchronously enough to return permission/start errors instead of detaching an unobserved sudo process.
+- A progress UI that waits for the installed version to match the latest version and refreshes after success.
+- Removal of CasaOS, GitHub repository and token configuration details from the visible Settings UI.
+- Server-side default configuration for the release repository with no stored token.
 
-## Vanguard 9.1.0 Velocity Edition
+## Data safety
 
-The 9.1.0 workflow preparation script is `.github/velocity-9.1/prepare_release.py`. It adds the performance assets, advances the service-worker cache version, injects additive stylesheet/script references into the existing installer, updates the embedded version, and regenerates the package checksum manifest.
+Release packages must not contain music, SQLite databases, user profiles, playlists, favorites, EQ settings, server credentials or backup archives. The installer must preserve these items, back up changed code, verify checksums, restart the service, health-check and roll back if installation fails.
 
-The 9.1 runtime improvements include native lazy loading for below-the-fold artwork, asynchronous image decoding, bounded MutationObserver work for dynamically added library content, and CSS content-visibility for long album/track collections.
-
-## Safety requirements
-
-- Keep release ZIPs free of music, SQLite databases, personal profiles, playlists, favorites, EQ settings, tokens, secrets and backups.
-- Use semantic versions and never reuse a published tag.
-- Preserve the existing player, routes, data and server configuration.
-- Require package checksum verification, a code-only backup, service restart, HTTP health check and rollback on failure.
+For future releases, add a preparation script, update the workflow's version recipe, update release notes, then update `release-assets/MUSIC_VAULT_RELEASE_VERSION.txt` last to trigger publishing.
