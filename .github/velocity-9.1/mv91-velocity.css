@@ -1,0 +1,29 @@
+/* Music Vault Vanguard 9.1 — Velocity Edition
+   Safe, additive rendering improvements. No app markup or theme replacement. */
+html.mv91-velocity {
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
+}
+html.mv91-velocity img { height: auto; }
+html.mv91-velocity .mv91-velocity-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 228px;
+}
+html.mv91-velocity .mv91-velocity-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 76px;
+}
+html.mv91-velocity :focus-visible {
+  outline: 2px solid #d8c38f;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.mv91-velocity *,
+  html.mv91-velocity *::before,
+  html.mv91-velocity *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
