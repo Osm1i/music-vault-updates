@@ -42,10 +42,23 @@ jobs:
           base64 --decode dist/package.tar.gz.b64 > dist/package.tar.gz
           gzip -t dist/package.tar.gz
           tar -xzf dist/package.tar.gz -C dist/stage
-          python3 .github/velocity-9.1/prepare_release.py dist/stage "$VERSION"
-          python3 -m py_compile .github/velocity-9.1/prepare_release.py
+          if [[ "$VERSION" == "9.2.0" ]]; then
+            python3 .github/velocity-9.1/prepare_release.py dist/stage "9.1.0"
+            python3 .github/velocity-9.2/prepare_release.py dist/stage "$VERSION"
+            python3 -m py_compile .github/velocity-9.1/prepare_release.py .github/velocity-9.2/prepare_release.py dist/stage/musicvault_update_routes.py
+            node --check dist/stage/static/mv91-velocity.js
+            node --check dist/stage/static/mv92-update-center.js
+            test -f dist/stage/musicvault_update_routes.py
+            test -f dist/stage/systemd/music-vault-update-install.service
+          elif [[ "$VERSION" == "9.1.0" ]]; then
+            python3 .github/velocity-9.1/prepare_release.py dist/stage "$VERSION"
+            python3 -m py_compile .github/velocity-9.1/prepare_release.py
+            node --check dist/stage/static/mv91-velocity.js
+          else
+            echo "No release preparation recipe exists for $VERSION." >&2
+            exit 2
+          fi
           bash -n dist/stage/install-update.sh
-          node --check dist/stage/static/mv91-velocity.js
 
           test -f dist/stage/static/mv91-velocity.css
           test -f dist/stage/static/mv91-velocity.js
