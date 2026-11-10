@@ -1,7 +1,7 @@
-Music Vault Vanguard 9.0.0 — additive release payload
-- static/mv90-app.css and static/mv90-app.js: complete additive app design layer
-- static/sw.js and static/manifest.webmanifest: v9.0 cache and PWA metadata
-- install-update.sh: syntax, markup, hash, HTTP health checks, and additive page patcher
-- MUSIC_VAULT_RELEASE_VERSION.txt and SHA256SUMS_9_0.txt
-The existing templates/index.html is patched additively during install; it is not replaced.
-No backend, music, database, profile, playlist, favorite, EQ or credential files are included.
+Music Vault Vanguard 9.1.0 — additive Velocity Edition payload
+- Preserves the full Vanguard 9.0 visual layer and existing page markup.
+- Adds static/mv91-velocity.css and static/mv91-velocity.js for native lazy media loading, asynchronous image decoding, long-library rendering containment, focus visibility and reduced-motion accessibility.
+- Advances the PWA service-worker cache to v9.1.0.
+- Installer adds the two performance assets to the existing index page without replacing the template.
+- Rebuilds SHA256SUMS_9_0.txt for the complete package to retain the existing installer contract.
+- No backend, music, database, profile, playlist, favorite, EQ or credential files are included.
