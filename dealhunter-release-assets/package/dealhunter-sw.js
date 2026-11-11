@@ -1,0 +1,5 @@
+const CACHE='dealhunter-shell-v8.0.0';
+const SHELL=['/manifest.webmanifest','/dealhunter-icon-192.png','/dealhunter-icon-512.png'];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}));self.skipWaiting();});
+self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('dealhunter-shell-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('fetch',event=>{const req=event.request,url=new URL(req.url);if(req.method!=='GET'||url.origin!==self.location.origin)return;if(url.pathname.startsWith('/api/')){event.respondWith(fetch(req,{cache:'no-store'}));return;}if(req.mode==='navigate'||url.pathname==='/'||url.pathname.endsWith('/mobile.html')){event.respondWith(fetch(req,{cache:'no-store'}).then(res=>{if(res.ok){const copy=res.clone();caches.open(CACHE).then(c=>c.put('/mobile.html',copy)).catch(()=>{});}return res;}).catch(()=>caches.match('/mobile.html')));}});

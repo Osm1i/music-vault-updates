@@ -1,0 +1,9 @@
+{
+  "version": "8.0.0",
+  "latestVersion": "8.0.0",
+  "status": "installed",
+  "message": "DealHunter 8.0 Ultimate Command Center installed. GitHub checks run every 15 minutes.",
+  "lastCheck": null,
+  "nextCheck": null,
+  "channel": "github-releases"
+}
