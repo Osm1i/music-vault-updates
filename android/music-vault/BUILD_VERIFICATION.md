@@ -1,0 +1,1 @@
+Build verification marker for the Music Vault Android car-screen APK workflow. This file does not affect the app binary.
