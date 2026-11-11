@@ -1,0 +1,88 @@
+name: Build Music Vault Android Car Screen APK
+
+on:
+  push:
+    branches:
+      - music-vault-android-car-screen-v1
+    paths:
+      - "android/music-vault/**"
+      - ".github/workflows/build-music-vault-android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: music-vault-android-apk
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Android app source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Reuse the same debug signing key for this sideloadable build so later
+      # APK refreshes can update the installed app rather than conflict.
+      - name: Restore stable Android debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: music-vault-car-screen-debug-signing-v1
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK components
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Build installable APK
+        working-directory: android/music-vault
+        run: gradle --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Verify APK exists and is signed
+        run: |
+          set -euo pipefail
+          APK="android/music-vault/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          mkdir -p dist
+          cp "$APK" dist/MusicVault-CarScreen-1.0.0.apk
+          sha256sum dist/MusicVault-CarScreen-1.0.0.apk > dist/SHA256SUMS.txt
+
+      - name: Upload APK build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MusicVault-CarScreen-APK
+          path: |
+            dist/MusicVault-CarScreen-1.0.0.apk
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish sideloadable APK release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="music-vault-android-v1.0.0"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/MusicVault-CarScreen-1.0.0.apk dist/SHA256SUMS.txt --clobber
+          else
+            gh release create "$TAG" dist/MusicVault-CarScreen-1.0.0.apk dist/SHA256SUMS.txt \
+              --title "Music Vault Android Car Screen 1.0.0" \
+              --notes "Sideloadable landscape Music Vault app for Android car screens. Connects to the existing CasaOS Music Vault server over Tailscale." \
+              --target "$GITHUB_SHA"
+          fi
