@@ -1,1 +1,1 @@
-Build verification marker for the Music Vault Android car-screen APK workflow. This file does not affect the app binary.
+Build verification marker for the Music Vault Android car-screen APK workflow. This documentation-only file is used to exercise the merged pull-request build workflow and does not affect the APK.
