@@ -6,7 +6,19 @@ on:
       - main
     paths:
       - "release-assets/MUSIC_VAULT_RELEASE_VERSION.txt"
+      - "release-assets/package-b64/**"
+      - ".github/velocity-9.1/**"
       - ".github/velocity-9.2/**"
+      - ".github/velocity-9.3/**"
+      - ".github/workflows/publish-music-vault-release.yml"
+  pull_request:
+    paths:
+      - "release-assets/MUSIC_VAULT_RELEASE_VERSION.txt"
+      - "release-assets/package-b64/**"
+      - ".github/velocity-9.1/**"
+      - ".github/velocity-9.2/**"
+      - ".github/velocity-9.3/**"
+      - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
 
 permissions:
@@ -22,7 +34,7 @@ jobs:
     steps:
       - name: Check out release source
         uses: actions/checkout@v4
-      - name: Build verified release assets
+      - name: Build and verify release assets
         id: build
         shell: bash
         run: |
@@ -33,37 +45,61 @@ jobs:
             exit 2
           fi
           rm -rf dist
-          mkdir -p dist/stage
-          mapfile -t PARTS < <(find release-assets/package-b64 -maxdepth 1 -type f -name 'part-*' -print | sort)
-          if [ "${#PARTS[@]}" -ne 14 ]; then
-            echo "Expected fourteen ordered base64 archive chunks; found ${#PARTS[@]}." >&2
-            exit 2
-          fi
-          for part in "${PARTS[@]}"; do cat "$part"; done > dist/package.tar.gz.b64
-          base64 --decode dist/package.tar.gz.b64 > dist/package.tar.gz
-          gzip -t dist/package.tar.gz
-          tar -xzf dist/package.tar.gz -C dist/stage
-          if [[ "$VERSION" == "9.2.0" ]]; then
-            python3 .github/velocity-9.1/prepare_release.py dist/stage "9.1.0"
-            python3 .github/velocity-9.2/prepare_release.py dist/stage "$VERSION"
-            python3 -m py_compile .github/velocity-9.1/prepare_release.py .github/velocity-9.2/prepare_release.py dist/stage/musicvault_update_routes.py
-            node --check dist/stage/static/mv91-velocity.js
-            node --check dist/stage/static/mv92-update-center.js
-            test -f dist/stage/musicvault_update_routes.py
+          mkdir -p dist
+
+          if [[ "$VERSION" == "9.3.0" ]]; then
+            mkdir -p dist/stage
+            mapfile -t PARTS < <(find .github/velocity-9.3 -maxdepth 1 -type f -name 'payload-part-*.b64' -print | sort)
+            if [ "${#PARTS[@]}" -ne 5 ]; then
+              echo "Expected five ordered Vanguard 9.3 payload chunks; found ${#PARTS[@]}." >&2
+              exit 2
+            fi
+            for part in "${PARTS[@]}"; do cat "$part"; done > dist/music-vault-casaos-update.zip.b64
+            base64 --decode dist/music-vault-casaos-update.zip.b64 > dist/music-vault-casaos-update.zip
+            unzip -t dist/music-vault-casaos-update.zip
+            unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
+            python3 -m py_compile dist/stage/patch_queue_cancel.py dist/stage/patch_public_settings.py
+            bash -n dist/stage/install-update.sh
             test -f dist/stage/systemd/music-vault-update-install.service
-          elif [[ "$VERSION" == "9.1.0" ]]; then
-            python3 .github/velocity-9.1/prepare_release.py dist/stage "$VERSION"
-            python3 -m py_compile .github/velocity-9.1/prepare_release.py
-            node --check dist/stage/static/mv91-velocity.js
+            test -f dist/stage/SHA256SUMS_9_3_0.txt
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_3_0.txt)
+          elif [[ "$VERSION" == "9.2.0" || "$VERSION" == "9.1.0" ]]; then
+            mkdir -p dist/stage
+            mapfile -t PARTS < <(find release-assets/package-b64 -maxdepth 1 -type f -name 'part-*' -print | sort)
+            if [ "${#PARTS[@]}" -ne 14 ]; then
+              echo "Expected fourteen ordered legacy archive chunks; found ${#PARTS[@]}." >&2
+              exit 2
+            fi
+            for part in "${PARTS[@]}"; do cat "$part"; done > dist/package.tar.gz.b64
+            base64 --decode dist/package.tar.gz.b64 > dist/package.tar.gz
+            gzip -t dist/package.tar.gz
+            tar -xzf dist/package.tar.gz -C dist/stage
+            if [[ "$VERSION" == "9.2.0" ]]; then
+              python3 .github/velocity-9.1/prepare_release.py dist/stage "9.1.0"
+              python3 .github/velocity-9.2/prepare_release.py dist/stage "$VERSION"
+              python3 -m py_compile .github/velocity-9.1/prepare_release.py .github/velocity-9.2/prepare_release.py dist/stage/musicvault_update_routes.py
+              node --check dist/stage/static/mv91-velocity.js
+              node --check dist/stage/static/mv92-update-center.js
+              test -f dist/stage/musicvault_update_routes.py
+              test -f dist/stage/systemd/music-vault-update-install.service
+              bash -n dist/stage/install-update-legacy.sh
+            else
+              python3 .github/velocity-9.1/prepare_release.py dist/stage "$VERSION"
+              python3 -m py_compile .github/velocity-9.1/prepare_release.py
+              node --check dist/stage/static/mv91-velocity.js
+            fi
+            bash -n dist/stage/install-update.sh
+            test -f dist/stage/static/mv91-velocity.css
+            test -f dist/stage/static/mv91-velocity.js
+            test -f dist/stage/SHA256SUMS_9_0.txt
+            test -f dist/stage/static/mv90-app.css
+            test -f dist/stage/static/mv90-app.js
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
           else
             echo "No release preparation recipe exists for $VERSION." >&2
             exit 2
           fi
-          bash -n dist/stage/install-update.sh
-          if [[ "$VERSION" == "9.2.0" ]]; then bash -n dist/stage/install-update-legacy.sh; fi
 
-          test -f dist/stage/static/mv91-velocity.css
-          test -f dist/stage/static/mv91-velocity.js
           test -f dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
           PACKAGE_VERSION="$(tr -d '\r\n' < dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt)"
           if [ "$PACKAGE_VERSION" != "$VERSION" ]; then
@@ -71,11 +107,6 @@ jobs:
             exit 2
           fi
           test -f dist/stage/install-update.sh
-          test -f dist/stage/SHA256SUMS_9_0.txt
-          test -f dist/stage/static/mv90-app.css
-          test -f dist/stage/static/mv90-app.js
-          (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
-
           SHA256="$(sha256sum dist/music-vault-casaos-update.zip | awk '{print $1}')"
           NOTES_FILE="release-assets/RELEASE_NOTES.md"
           if [ -f "$NOTES_FILE" ]; then
@@ -83,7 +114,7 @@ jobs:
             NOTES="$(cat "$NOTES_FILE")"
           else
             NOTES="Music Vault stable release $VERSION."
-            printf '%s\\n' "$NOTES" > dist/RELEASE_NOTES.md
+            printf '%s\n' "$NOTES" > dist/RELEASE_NOTES.md
           fi
           python3 - "$VERSION" "$SHA256" "$NOTES" > dist/music-vault-update-manifest.json <<'PY'
           import json, sys
@@ -101,15 +132,16 @@ jobs:
           echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
           cat dist/music-vault-update-manifest.json
       - name: Publish GitHub Release
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          TAG="${{ steps.build.outputs.tag }}"
+          TAG="v$(tr -d '\r\n' < release-assets/MUSIC_VAULT_RELEASE_VERSION.txt)"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/music-vault-casaos-update.zip dist/music-vault-update-manifest.json --clobber
           else
-            gh release create "$TAG" dist/music-vault-casaos-update.zip dist/music-vault-update-manifest.json --title "Music Vault ${{ steps.build.outputs.version }}" --notes-file dist/RELEASE_NOTES.md --target "$GITHUB_SHA"
+            gh release create "$TAG" dist/music-vault-casaos-update.zip dist/music-vault-update-manifest.json --title "Music Vault $TAG" --notes-file dist/RELEASE_NOTES.md --target "$GITHUB_SHA"
           fi
-          echo "Published $TAG with SHA-256 ${{ steps.build.outputs.sha256 }}"
+          echo "Published $TAG"

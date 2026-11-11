@@ -1,22 +1,20 @@
-# Music Vault Vanguard 9.2.0 — Update Center Repair
+# Music Vault Vanguard 9.3.0 — Queue Cancel and Public Release Polish
 
-A reliability and privacy-focused follow-up to Vanguard 9.0 and the 9.1 Velocity performance release.
+## Download Queue Control
+- Cancel an active or stuck URL download without waiting for it to finish.
+- Stop the isolated downloader process group (including yt-dlp/FFmpeg descendants) and remove only that job's staging files.
+- Keep queued, completed and unrelated library data intact.
+- Keep Cancel available through yt-dlp extraction and post-processing; protect only the final library tagging/copy phase.
 
-## Update installation now has a real system service
-- The Install Update action starts a dedicated systemd install service instead of spawning a detached sudo process from the web worker.
-- Update-start permission failures are returned to the app immediately instead of looking like a successful launch.
-- Scoped sudoers rules allow only starting the update-check and update-install services.
-- The app displays install progress, polls for the installed version, reports an update error, and refreshes after a confirmed successful install.
-
-## Cleaner Settings
-- Removes visible CasaOS-specific setup details.
-- Hides GitHub repository and personal access token fields from the user-facing Settings screen.
-- The updater keeps its release-channel configuration internally and does not persist a GitHub token.
+## Public Settings and Updates
+- Hide CasaOS dashboard/admin controls and personal GitHub repository/token inputs from public Settings.
+- Keep USB drive selection, folder configuration and library scanning available.
+- Manage the official Music Vault update channel internally, preserving a server-side token for private-channel testing.
+- Check/Install actions use systemd services with scoped sudoers rules and report service-start errors accurately.
 
 ## Preserved
-- Vanguard 9.0 app design and 9.1 Velocity rendering improvements.
-- Existing player, audio engine, EQ, profiles, playlists, favorites, family data, databases and music library.
-- Update package SHA-256 verification, backup and health-check flow.
+- Existing player, playback engine, equalizer, profiles, playlists, favorites, family data, database and music collection.
+- SHA-256 verified update installation, file-level backup and automatic rollback after failed health checks.
 
 ## Install
-Open Music Vault → Settings → Update Center → Check now → Install update.
+Open Music Vault → Settings → Update Center → Check for updates → Install update.
