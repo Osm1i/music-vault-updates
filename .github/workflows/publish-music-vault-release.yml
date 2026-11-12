@@ -54,8 +54,8 @@ jobs:
           if [[ "$VERSION" == "9.4.0" ]]; then
             mkdir -p dist/stage
             mapfile -t PARTS < <(find release-assets/velocity-9.4-b64 -maxdepth 1 -type f -name 'part-*.b64' -print | sort)
-            if [ "${#PARTS[@]}" -ne 7 ]; then
-              echo "Expected seven ordered Vanguard 9.4 payload chunks; found ${#PARTS[@]}." >&2
+            if [ "${#PARTS[@]}" -ne 8 ]; then
+              echo "Expected eight ordered Vanguard 9.4 payload chunks; found ${#PARTS[@]}." >&2
               exit 2
             fi
             for part in "${PARTS[@]}"; do cat "$part"; done > dist/music-vault-casaos-update.zip.b64
