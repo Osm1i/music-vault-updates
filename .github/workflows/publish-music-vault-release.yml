@@ -13,6 +13,7 @@ on:
       - "release-assets/velocity-9.4-b64/**"
       - "release-assets/velocity-9.5-b64/**"
       - "release-assets/velocity-9.5.1-b64/**"
+      - "release-assets/velocity-9.6-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -25,6 +26,7 @@ on:
       - "release-assets/velocity-9.4-b64/**"
       - "release-assets/velocity-9.5-b64/**"
       - "release-assets/velocity-9.5.1-b64/**"
+      - "release-assets/velocity-9.6-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -55,7 +57,31 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.5.1" ]]; then
+          if [[ "$VERSION" == "9.6.0" ]]; then
+            mkdir -p dist/stage
+            mapfile -t PARTS < <(find release-assets/velocity-9.6-b64 -maxdepth 1 -type f -name 'part-*.b64' -print | sort)
+            if [ "${#PARTS[@]}" -ne 18 ]; then
+              echo "Expected eighteen ordered Music Vault 9.6.0 package chunks; found ${#PARTS[@]}." >&2
+              exit 2
+            fi
+            for part in "${PARTS[@]}"; do cat "$part"; done > dist/music-vault-casaos-update.zip.b64
+            base64 --decode dist/music-vault-casaos-update.zip.b64 > dist/music-vault-casaos-update.zip
+            unzip -t dist/music-vault-casaos-update.zip
+            unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_6_0.txt)
+            python3 -m py_compile dist/stage/tests/test_release_package.py
+            python3 dist/stage/tests/test_release_package.py
+            bash -n dist/stage/install-update.sh
+            node --check dist/stage/payload/static/mv95-library.js
+            node --check dist/stage/payload/static/mv96-performance.js
+            test -f dist/stage/payload/static/mv95-library.css
+            test -f dist/stage/payload/static/mv96-performance.css
+            test -f dist/stage/patches/music-vault-9.6.0.patch
+            test -f dist/stage/expected-v951-source.sha256
+            test ! -e dist/stage/musicvault_update_routes.py
+            test ! -e dist/stage/static/mv-update-center.js
+            test ! -e dist/stage/systemd
+          elif [[ "$VERSION" == "9.5.1" ]]; then
             mkdir -p dist/stage
             mapfile -t PARTS < <(find release-assets/velocity-9.5.1-b64 -maxdepth 1 -type f -name 'part-*.b64' -print | sort)
             if [ "${#PARTS[@]}" -ne 20 ]; then

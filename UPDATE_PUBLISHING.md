@@ -48,3 +48,13 @@ For future releases, add a preparation script or package chunk set, update the w
 - Runs an isolated SQLite-backed endpoint test for the initial request, warm cache hit, and cache invalidation refresh.
 - Installer verifies the exact exported 9.4.0 baseline, applies zero-fuzz patches, snapshots changed app/source assets, then checks Recent Added twice after restart. Any failure restores prior app files.
 - Preserves the existing GitHub Releases updater and user-approved install action.
+
+
+## Vanguard 9.6.0
+
+- Package source: `release-assets/velocity-9.6-b64/part-000.b64` through `part-017.b64` (18 ordered base64 chunks).
+- Builds the release ZIP and manifest from the same GitHub Releases publisher as previous versions.
+- CI verifies the ZIP, checks all package SHA-256 sums, compiles the Python regression test, runs the isolated package suite, checks Bash/JavaScript syntax and confirms updater/systemd files are excluded.
+- Exact source baseline: 9.5.1. Zero-fuzz patch, targeted source/static backups, transactional rollback and post-restart health checks are performed by the installer.
+- Improves first-render time and adds whole-album recovery/quarantine. The existing single-song removal stays.
+- Does not replace the updater routes/client, manifest contract, scheduled update services/timers or user-approved installation step.

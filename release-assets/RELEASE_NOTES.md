@@ -1,21 +1,23 @@
-# Music Vault Vanguard 9.5.1 — Recent Added Cache Fix
+# Music Vault Vanguard 9.6.0 — Faster Loading + Album Removal
 
-## Corrected 9.5.0 installation failure
-- Declare the shared Recent Added cache at module scope inside its endpoint, fixing the `UnboundLocalError` that caused HTTP 500 during live installation.
-- Reset cache fields during track removal rather than clearing the dictionary, so subsequent requests retain the required cache keys.
-- Avoid rerunning expensive grouping on every request when a library has fewer albums than the requested page size.
-- Run cold-cache, warm-cache, and invalidation/refresh regression tests in CI.
-- The installer now calls Recent Added twice after restart and validates both responses before committing the update; failed health checks still trigger rollback.
+## Faster first load
+- Reduce Listen Now's blocking data to a bounded recent set (24 recent albums and 120 recent tracks) and paint it before profile extras load.
+- Playlist cards load four-track previews; full playlist contents are fetched only when a playlist is opened.
+- Keep a short profile-scoped Home cache and invalidate it when switching profiles.
+- Batch Recent Added folder reads, use SQL-backed album grouping/pagination, add a short status cache, and keep Home/library artwork lazy and asynchronous.
+- Preserve all existing player, navigation, profile, favorites and playlist interactions.
 
-## Included Vanguard 9.5.0 features
-- Redesigned Library → Songs with track metadata and existing playback, queue, favorite and playlist actions.
-- Press-and-hold / More / context-menu song removal with confirmation and recoverable hidden quarantine for the audio and supported sidecars.
-- Faster Recent Added using a bounded endpoint and shared cache.
-- Search mood categories and Radio stations backed by embedded genre tags, with conservative fallback matching.
-- Dynamic Island search text is hidden in compact mode.
+## Remove an entire album safely
+- Hold an album card for about 0.7 seconds, use its More menu, or right-click on desktop.
+- Show a confirmation including the album and track count.
+- Move its audio files and supported lyric sidecars into a hidden, recoverable `.trash/MusicVaultRemoved/album-*` folder with a manifest recording original paths.
+- Remove catalog rows and associated playlist, favorite, history and Apple-library match references transactionally. If a move or database operation fails, restore the moved files and roll back.
+- The existing single-song hold-to-remove behavior remains available.
 
-## Preservation
-- The existing public GitHub Releases updater remains unchanged: same release API, ZIP + manifest, SHA-256 verification, scheduled checks/downloads, user-approved install, systemd install service, backups and rollback.
-- No updater routes, updater services/timers, credentials, music, databases, profiles, playlists, favorites, history, EQ, queue data or USB configuration are included or replaced.
+## Updater and data safety
+- This is an incremental update for the exact Music Vault 9.5.1 source baseline.
+- Keep the existing public GitHub Releases updater for `Osm1i/music-vault-updates`: same ZIP + manifest format, SHA-256 verification, scheduled check/download, systemd install service, backup/rollback and user-approved Install action.
+- Do not replace updater routes, updater JavaScript, updater services/timers, credentials, personal database, profiles, playlists, favorites, history, EQ settings, queue data, USB configuration or music files.
+- No personal music or database content is included.
 
 Open Music Vault → Settings → Update Center → Check for updates → Install update. Installation remains user-approved.
