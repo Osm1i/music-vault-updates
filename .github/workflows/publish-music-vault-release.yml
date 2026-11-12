@@ -11,7 +11,7 @@ on:
       - ".github/velocity-9.2/**"
       - ".github/velocity-9.3/**"
       - "release-assets/velocity-9.4-b64/**"
-      - "release-assets/velocity-9.5-b64/**"
+      - "release-assets/package-binary/Music_Vault_Vanguard_9_5_0_Update.zip"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -54,13 +54,9 @@ jobs:
 
           if [[ "$VERSION" == "9.5.0" ]]; then
             mkdir -p dist/stage
-            mapfile -t PARTS < <(find release-assets/velocity-9.5-b64 -maxdepth 1 -type f -name 'part-*.b64' -print | sort)
-            if [ "${#PARTS[@]}" -ne 6 ]; then
-              echo "Expected six ordered Vanguard 9.5 payload chunks; found ${#PARTS[@]}." >&2
-              exit 2
-            fi
-            for part in "${PARTS[@]}"; do cat "$part"; done > dist/music-vault-casaos-update.zip.b64
-            base64 --decode dist/music-vault-casaos-update.zip.b64 > dist/music-vault-casaos-update.zip
+            PACKAGE_SOURCE="release-assets/package-binary/Music_Vault_Vanguard_9_5_0_Update.zip"
+            test -s "$PACKAGE_SOURCE"
+            cp "$PACKAGE_SOURCE" dist/music-vault-casaos-update.zip
             unzip -t dist/music-vault-casaos-update.zip
             unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
             (cd dist/stage && sha256sum -c SHA256SUMS_9_5_0.txt)
