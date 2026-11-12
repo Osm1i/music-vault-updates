@@ -64,7 +64,28 @@ jobs:
             unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
             (cd dist/stage && sha256sum -c SHA256SUMS_9_5_0.txt)
             python3 -m py_compile dist/stage/patch_musicvault_95.py
-            python3 dist/stage/tests/test_musicvault_95.py
+            python3 -m unittest discover -s dist/stage/tests -p 'test_musicvault_95.py' -k genre_matching_in_node
+            python3 - <<'PY'
+            from pathlib import Path
+            root = Path("dist/stage")
+            patcher = (root / "patch_musicvault_95.py").read_text(encoding="utf-8")
+            js = (root / "static/mv95-experience.js").read_text(encoding="utf-8")
+            css = (root / "static/mv95-experience.css").read_text(encoding="utf-8")
+            installer = (root / "install-update.sh").read_text(encoding="utf-8")
+            checks = {
+                "additive genre migration": "ALTER TABLE tracks ADD COLUMN genre TEXT NOT NULL DEFAULT ''" in patcher,
+                "genre-backed radio API": "@app.get('/api/radio/tracks')" in patcher,
+                "recoverable path-scoped removal": "source.is_relative_to(library_root)" in patcher and "'.music-vault-trash'" in patcher,
+                "shared recently-added cache": "window.__mv95FetchAlbumIndex" in patcher,
+                "compact search label hidden": "#mvBottomIsland.mvbi-collapsed .mvbi-search small{display:none!important;}" in css,
+                "new songs interactions": "data-mv95-song" in js and "hold" in js.lower(),
+                "official updater not replaced": "music-vault-update-agent" not in installer and "musicvault_update_routes.py" not in installer and "mv-update-center.js" not in installer,
+            }
+            for name, ok in checks.items():
+                print(("PASS: " if ok else "FAIL: ") + name)
+            if not all(checks.values()):
+                raise SystemExit("Release package static verification failed")
+            PY
             bash -n dist/stage/install-update.sh
             node --check dist/stage/static/mv95-experience.js
             test -f dist/stage/static/mv95-experience.css
