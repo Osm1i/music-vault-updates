@@ -1,91 +1,84 @@
-name: Build Music Vault Android Car Screen APK
-
+name: Build T88 Android Apps
 on:
   push:
-    branches:
-      - main
-      - music-vault-android-car-screen-v1
+    branches: [main, music-vault-android-car-screen-v1]
     paths:
       - "android/music-vault/**"
+      - "android/jarvis/**"
       - ".github/workflows/build-music-vault-android.yml"
   pull_request:
     paths:
       - "android/music-vault/**"
+      - "android/jarvis/**"
       - ".github/workflows/build-music-vault-android.yml"
   workflow_dispatch:
-
 permissions:
   contents: write
-
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out Android app source
+      - name: Check out Android app sources
         uses: actions/checkout@v4
-
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-
-      # Reuse the same debug signing key for this sideloadable build so later
-      # APK refreshes can update the installed app rather than conflict.
-      - name: Restore stable Android debug signing key
+      - name: Restore stable signing key for repeat installs
         uses: actions/cache@v4
         with:
           path: ~/.android/debug.keystore
-          key: music-vault-car-screen-debug-signing-v1
-
+          key: t88-android-debug-signing-v1
       - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
-
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-
+        with:
+          packages: platform-tools
       - name: Install Android SDK components
-        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-
-      - name: Build installable APK
-        working-directory: android/music-vault
-        run: gradle --no-daemon --stacktrace :app:assembleDebug
-
-      - name: Verify APK exists and is signed
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Build Music Vault APK
+        run: gradle --no-daemon --stacktrace -p android/music-vault :app:assembleDebug
+      - name: Build JARVIS APK
+        run: gradle --no-daemon --stacktrace -p android/jarvis :app:assembleDebug
+      - name: Verify and stage both signed APKs
         run: |
           set -euo pipefail
-          APK="android/music-vault/app/build/outputs/apk/debug/app-debug.apk"
-          test -s "$APK"
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
           mkdir -p dist
-          cp "$APK" dist/MusicVault-CarScreen-1.0.0.apk
-          sha256sum dist/MusicVault-CarScreen-1.0.0.apk > dist/SHA256SUMS.txt
-
-      - name: Upload APK build artifact
+          MV="android/music-vault/app/build/outputs/apk/debug/app-debug.apk"
+          JV="android/jarvis/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$MV"
+          test -s "$JV"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$MV"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$JV"
+          cp "$MV" dist/MusicVault-T88-1.1.0.apk
+          cp "$JV" dist/JARVIS-T88-1.0.0.apk
+          sha256sum dist/*.apk > dist/SHA256SUMS.txt
+      - name: Upload both APKs
         uses: actions/upload-artifact@v4
         with:
-          name: MusicVault-CarScreen-APK
+          name: T88-Android-APKs
           path: |
-            dist/MusicVault-CarScreen-1.0.0.apk
+            dist/MusicVault-T88-1.1.0.apk
+            dist/JARVIS-T88-1.0.0.apk
             dist/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30
-
-      - name: Publish sideloadable APK release
+      - name: Publish T88 APK release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="music-vault-android-v1.0.0"
+          TAG="t88-apps-1.1.0"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/MusicVault-CarScreen-1.0.0.apk dist/SHA256SUMS.txt --clobber
+            gh release upload "$TAG" dist/MusicVault-T88-1.1.0.apk dist/JARVIS-T88-1.0.0.apk dist/SHA256SUMS.txt --clobber
           else
-            gh release create "$TAG" dist/MusicVault-CarScreen-1.0.0.apk dist/SHA256SUMS.txt \
-              --title "Music Vault Android Car Screen 1.0.0" \
-              --notes "Sideloadable landscape Music Vault app for Android car screens. Connects to the existing CasaOS Music Vault server over Tailscale." \
+            gh release create "$TAG" dist/MusicVault-T88-1.1.0.apk dist/JARVIS-T88-1.0.0.apk dist/SHA256SUMS.txt \
+              --title "T88 Android Apps — Music Vault 1.1.0 + JARVIS 1.0.0" \
+              --notes "Sideloadable landscape apps for T88. Music Vault connects to the CasaOS Music Vault server; JARVIS connects to the self-hosted JARVIS server over Tailscale." \
               --target "$GITHUB_SHA"
           fi

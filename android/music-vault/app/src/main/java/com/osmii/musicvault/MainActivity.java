@@ -11,6 +11,8 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,6 +45,10 @@ public final class MainActivity extends Activity {
     private View errorPanel;
     private TextView errorText;
     private String serverUrl;
+    private final Handler retryHandler = new Handler(Looper.getMainLooper());
+    private boolean retryNeeded = false;
+    private int retryCount = 0;
+    private Runnable retryTask;
 
     @SuppressLint({"SetJavaScriptEnabled", "ClickableViewAccessibility"})
     @Override
@@ -53,6 +59,7 @@ public final class MainActivity extends Activity {
 
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
         serverUrl = normalizeUrl(prefs.getString(KEY_URL, DEFAULT_URL));
+        if (serverUrl == null) serverUrl = DEFAULT_URL;
 
         root = new FrameLayout(this);
         root.setBackgroundColor(Color.rgb(8, 9, 12));
@@ -98,19 +105,26 @@ public final class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 hideError();
+                retryNeeded = false;
+                retryCount = 0;
+                cancelNetworkRetry();
             }
 
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (request != null && request.isForMainFrame()) {
-                    showError("Music Vault could not connect. Make sure Tailscale is connected and your CasaOS server is online.");
+                    showError("Music Vault could not connect. Connect Tailscale, then return here; it will retry automatically.");
+                    retryNeeded = true;
+                    scheduleNetworkRetry();
                 }
             }
 
             @Override
             public void onReceivedHttpError(WebView view, WebResourceRequest request, android.webkit.WebResourceResponse response) {
                 if (request != null && request.isForMainFrame() && response.getStatusCode() >= 500) {
-                    showError("Music Vault server returned HTTP " + response.getStatusCode() + ".");
+                    showError("Music Vault server returned HTTP " + response.getStatusCode() + ". Retrying…");
+                    retryNeeded = true;
+                    scheduleNetworkRetry();
                 }
             }
         });
@@ -241,8 +255,28 @@ public final class MainActivity extends Activity {
 
     private void loadMusicVault() {
         if (webView == null) return;
+        cancelNetworkRetry();
+        retryNeeded = false;
+        retryCount = 0;
         hideError();
         webView.loadUrl(serverUrl);
+    }
+
+    private void scheduleNetworkRetry() {
+        cancelNetworkRetry();
+        if (!retryNeeded || retryCount >= 10) return;
+        retryTask = () -> {
+            if (retryNeeded && webView != null) {
+                retryCount++;
+                webView.loadUrl(serverUrl);
+            }
+        };
+        retryHandler.postDelayed(retryTask, Math.min(20000L, 2500L + retryCount * 1800L));
+    }
+
+    private void cancelNetworkRetry() {
+        if (retryTask != null) retryHandler.removeCallbacks(retryTask);
+        retryTask = null;
     }
 
     private void editServerAddress() {
@@ -325,11 +359,21 @@ public final class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         setImmersiveMode();
-        // Keep the WebView instance alive when returning from Tailscale so playback state is not discarded.
+        // Retain the WebView and reconnect automatically after Tailscale returns to the foreground.
+        if (retryNeeded && webView != null) {
+            cancelNetworkRetry();
+            retryHandler.postDelayed(() -> {
+                if (retryNeeded && webView != null) {
+                    retryCount++;
+                    webView.loadUrl(serverUrl);
+                }
+            }, 1200L);
+        }
     }
 
     @Override
     protected void onDestroy() {
+        cancelNetworkRetry();
         if (webView != null) {
             webView.stopLoading();
             webView.setWebChromeClient(null);
