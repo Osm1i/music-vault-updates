@@ -175,6 +175,8 @@ jobs:
 
           # Publish the patched 9.4.0 stage, not the original embedded ZIP.
           if [[ "$VERSION" == "9.4.0" ]]; then
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
             rm -f dist/music-vault-casaos-update.zip
             (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
             unzip -t dist/music-vault-casaos-update.zip
