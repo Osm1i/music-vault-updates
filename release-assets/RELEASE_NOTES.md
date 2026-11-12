@@ -1,23 +1,9 @@
-# Music Vault Vanguard 9.6.0 — Faster Loading + Album Removal
+# Music Vault Vanguard 9.7.0 — Responsive Layout Update
 
-## Faster first load
-- Reduce Listen Now's blocking data to a bounded recent set (24 recent albums and 120 recent tracks) and paint it before profile extras load.
-- Playlist cards load four-track previews; full playlist contents are fetched only when a playlist is opened.
-- Keep a short profile-scoped Home cache and invalidate it when switching profiles.
-- Batch Recent Added folder reads, use SQL-backed album grouping/pagination, add a short status cache, and keep Home/library artwork lazy and asynchronous.
-- Preserve all existing player, navigation, profile, favorites and playlist interactions.
+- Responsive layouts for small phones, larger phones, tablets, and desktops.
+- Safe-area spacing for notched screens and home indicators.
+- Improved mobile grids, track rows, search/header wrapping, navigation, player dock, and album/player overlays.
+- Landscape-phone and reduced-motion adjustments.
+- Additive stylesheet only; application backend, user data, music, and updater components are not replaced.
 
-## Remove an entire album safely
-- Hold an album card for about 0.7 seconds, use its More menu, or right-click on desktop.
-- Show a confirmation including the album and track count.
-- Move its audio files and supported lyric sidecars into a hidden, recoverable `.trash/MusicVaultRemoved/album-*` folder with a manifest recording original paths.
-- Remove catalog rows and associated playlist, favorite, history and Apple-library match references transactionally. If a move or database operation fails, restore the moved files and roll back.
-- The existing single-song hold-to-remove behavior remains available.
-
-## Updater and data safety
-- This is an incremental update for the exact Music Vault 9.5.1 source baseline.
-- Keep the existing public GitHub Releases updater for `Osm1i/music-vault-updates`: same ZIP + manifest format, SHA-256 verification, scheduled check/download, systemd install service, backup/rollback and user-approved Install action.
-- Do not replace updater routes, updater JavaScript, updater services/timers, credentials, personal database, profiles, playlists, favorites, history, EQ settings, queue data, USB configuration or music files.
-- No personal music or database content is included.
-
-Open Music Vault → Settings → Update Center → Check for updates → Install update. Installation remains user-approved.
+Open Music Vault → Settings → Update Center → Check for updates → Install update.
