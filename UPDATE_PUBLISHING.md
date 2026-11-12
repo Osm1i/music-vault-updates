@@ -38,3 +38,13 @@ For future releases, add a preparation script or package chunk set, update the w
 - Adds redesigned Songs library, safe hold-to-remove with recoverable file quarantine, optimized Recent Added API, genre-aware Search and Radio, and compact Dynamic Island search-label fix.
 - Installer uses exact v9.4 source fingerprints and zero-fuzz patches; it snapshots only app source/static files, rolls back on errors, and live-checks the service and new endpoints.
 - Existing updater routes, GitHub release client, manifest format, systemd timer/install services and user-approved install flow remain untouched.
+
+
+## Vanguard 9.5.1 corrective release
+
+- Package source: `release-assets/velocity-9.5.1-b64/part-000.b64` through `part-008.b64`.
+- Fixes the 9.5.0 Recent Added route's missing `global _mv95_recent_cache` declaration and safe cache invalidation.
+- Avoids repeated grouping for libraries with fewer albums than the requested page limit.
+- Runs an isolated SQLite-backed endpoint test for the initial request, warm cache hit, and cache invalidation refresh.
+- Installer verifies the exact exported 9.4.0 baseline, applies zero-fuzz patches, snapshots changed app/source assets, then checks Recent Added twice after restart. Any failure restores prior app files.
+- Preserves the existing GitHub Releases updater and user-approved install action.

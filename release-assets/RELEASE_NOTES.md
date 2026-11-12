@@ -1,31 +1,21 @@
-# Music Vault Vanguard 9.5.0 — Library Experience + Genre Intelligence
+# Music Vault Vanguard 9.5.1 — Recent Added Cache Fix
 
-## Library → Songs
-- Rework the Songs view into a clear, sortable track library with artwork, track/artist/album metadata, genre/file details, duration and quick actions.
-- Keep playback, queue, favorites and playlist actions connected to the existing handlers.
+## Corrected 9.5.0 installation failure
+- Declare the shared Recent Added cache at module scope inside its endpoint, fixing the `UnboundLocalError` that caused HTTP 500 during live installation.
+- Reset cache fields during track removal rather than clearing the dictionary, so subsequent requests retain the required cache keys.
+- Avoid rerunning expensive grouping on every request when a library has fewer albums than the requested page size.
+- Run cold-cache, warm-cache, and invalidation/refresh regression tests in CI.
+- The installer now calls Recent Added twice after restart and validates both responses before committing the update; failed health checks still trigger rollback.
 
-## Remove an incorrect version safely
-- Press and hold a song, use the context menu, or tap More to request removal.
-- Show a confirmation before removing the track from the catalog and personal references.
-- Move the audio file and supported lyric/subtitle sidecars into a hidden recoverable .trash folder rather than permanently deleting them.
-- Refuse paths outside the configured music root and restore moved files if the database operation fails.
+## Included Vanguard 9.5.0 features
+- Redesigned Library → Songs with track metadata and existing playback, queue, favorite and playlist actions.
+- Press-and-hold / More / context-menu song removal with confirmation and recoverable hidden quarantine for the audio and supported sidecars.
+- Faster Recent Added using a bounded endpoint and shared cache.
+- Search mood categories and Radio stations backed by embedded genre tags, with conservative fallback matching.
+- Dynamic Island search text is hidden in compact mode.
 
-## Faster Recent Added
-- Add a bounded recent-albums endpoint using folder/path ranges and a short shared server cache.
-- Keep the existing Recent Added presentation while avoiding repeated full-library grouping and pagination.
-
-## Search and Radio
-- Read embedded genre tags into the catalog and incrementally backfill existing tracks.
-- Make Search mood categories and Radio genre stations query actual genre metadata, with conservative title/artist fallback for tracks that have no genre tag.
-- Radio category searches are server-side rather than limited to only the newest locally loaded tracks.
-
-## Dynamic Island polish
-- Hide the search text label in compact mode while retaining the icon and corrected alignment.
-
-## Updater and data safety
-- Preserve the existing public GitHub Releases update method for `Osm1i/music-vault-updates`.
-- Keep the existing ZIP + manifest + SHA-256 verification, scheduled checks/downloads, systemd install path, backups, rollback and user-approved Install action.
-- The release payload does not replace updater routes, updater services/timers, credentials, user databases, profiles, playlists, history, favorites, EQ settings, queue data, USB configuration or music files.
-- No music or database content is included.
+## Preservation
+- The existing public GitHub Releases updater remains unchanged: same release API, ZIP + manifest, SHA-256 verification, scheduled checks/downloads, user-approved install, systemd install service, backups and rollback.
+- No updater routes, updater services/timers, credentials, music, databases, profiles, playlists, favorites, history, EQ, queue data or USB configuration are included or replaced.
 
 Open Music Vault → Settings → Update Center → Check for updates → Install update. Installation remains user-approved.
