@@ -10,6 +10,8 @@ on:
       - ".github/velocity-9.1/**"
       - ".github/velocity-9.2/**"
       - ".github/velocity-9.3/**"
+      - "release-assets/velocity-9.4-b64/**"
+      - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
     paths:
@@ -18,6 +20,8 @@ on:
       - ".github/velocity-9.1/**"
       - ".github/velocity-9.2/**"
       - ".github/velocity-9.3/**"
+      - "release-assets/velocity-9.4-b64/**"
+      - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
 
@@ -47,7 +51,25 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.3.0" ]]; then
+          if [[ "$VERSION" == "9.4.0" ]]; then
+            mkdir -p dist/stage
+            mapfile -t PARTS < <(find release-assets/velocity-9.4-b64 -maxdepth 1 -type f -name 'part-*.b64' -print | sort)
+            if [ "${#PARTS[@]}" -ne 7 ]; then
+              echo "Expected seven ordered Vanguard 9.4 payload chunks; found ${#PARTS[@]}." >&2
+              exit 2
+            fi
+            for part in "${PARTS[@]}"; do cat "$part"; done > dist/music-vault-casaos-update.zip.b64
+            base64 --decode dist/music-vault-casaos-update.zip.b64 > dist/music-vault-casaos-update.zip
+            unzip -t dist/music-vault-casaos-update.zip
+            unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_4_0.txt)
+            python3 -m py_compile dist/stage/patch_queue_cancel.py dist/stage/patch_public_settings.py dist/stage/patch_performance.py dist/stage/cleanup_prior_auto_updater.py
+            python3 dist/stage/tests/test_release_package.py
+            bash -n dist/stage/install-update.sh
+            node --check dist/stage/static/mv94-velocity.js
+            test -f dist/stage/systemd/music-vault-update-check.timer
+            test -f dist/stage/systemd/music-vault-update-install.service
+          elif [[ "$VERSION" == "9.3.0" ]]; then
             mkdir -p dist/stage
             mapfile -t PARTS < <(find .github/velocity-9.3 -maxdepth 1 -type f -name 'payload-part-*.b64' -print | sort)
             if [ "${#PARTS[@]}" -ne 5 ]; then
