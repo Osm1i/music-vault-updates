@@ -62,6 +62,57 @@ jobs:
             base64 --decode dist/music-vault-casaos-update.zip.b64 > dist/music-vault-casaos-update.zip
             unzip -t dist/music-vault-casaos-update.zip
             unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
+            # Correct the original 9.4.0 archive's asset paths before validating
+            # and publishing. The CSS/JS files are stored under static/ in the ZIP.
+            python3 - <<'PY'
+            from pathlib import Path
+            import hashlib
+
+            root = Path("dist/stage")
+            installer = root / "install-update.sh"
+            script = installer.read_text(encoding="utf-8")
+            replacements = [
+                ('node --check "$PKG_DIR/mv94-velocity.js" >/dev/null',
+                 'node --check "$PKG_DIR/static/mv94-velocity.js" >/dev/null'),
+                ('install -m 0644 "$PKG_DIR/mv94-velocity.css" "$APP_ROOT/static/mv94-velocity.css"',
+                 'install -m 0644 "$PKG_DIR/static/mv94-velocity.css" "$APP_ROOT/static/mv94-velocity.css"'),
+                ('install -m 0644 "$PKG_DIR/mv94-velocity.js" "$APP_ROOT/static/mv94-velocity.js"',
+                 'install -m 0644 "$PKG_DIR/static/mv94-velocity.js" "$APP_ROOT/static/mv94-velocity.js"'),
+            ]
+            for old_text, new_text in replacements:
+                if old_text in script:
+                    script = script.replace(old_text, new_text)
+                elif new_text not in script:
+                    raise SystemExit("Expected 9.4.0 installer path was not found: " + old_text)
+            installer.write_text(script, encoding="utf-8")
+
+            test_path = root / "tests/test_release_package.py"
+            test_text = test_path.read_text(encoding="utf-8")
+            marker = "installer=(root/'install-update.sh').read_text(encoding='utf-8')\n"
+            assertions = """# The CSS and JS payloads are stored under static/ in the release ZIP.
+            assert (root/'static/mv94-velocity.js').is_file()
+            assert (root/'static/mv94-velocity.css').is_file()
+            assert 'node --check "$PKG_DIR/static/mv94-velocity.js"' in installer
+            assert '"$PKG_DIR/static/mv94-velocity.css" "$APP_ROOT/static/mv94-velocity.css"' in installer
+            assert '"$PKG_DIR/static/mv94-velocity.js" "$APP_ROOT/static/mv94-velocity.js"' in installer
+            assert '"$PKG_DIR/mv94-velocity.js"' not in installer
+            assert '"$PKG_DIR/mv94-velocity.css"' not in installer
+            """
+            if "The CSS and JS payloads are stored under static/" not in test_text:
+                if marker not in test_text:
+                    raise SystemExit("Could not locate package regression-test insertion point")
+                test_text = test_text.replace(marker, marker + assertions)
+                test_path.write_text(test_text, encoding="utf-8")
+
+            sums = root / "SHA256SUMS_9_4_0.txt"
+            files = sorted(p for p in root.rglob("*") if p.is_file() and p != sums)
+            entries = []
+            for file in files:
+                digest = hashlib.sha256(file.read_bytes()).hexdigest()
+                entries.append(digest + "  " + file.relative_to(root).as_posix() + "\n")
+            sums.write_text("".join(entries), encoding="utf-8")
+            print("Patched and re-checksummed the 9.4.0 installer payload.")
+            PY
             (cd dist/stage && sha256sum -c SHA256SUMS_9_4_0.txt)
             python3 -m py_compile dist/stage/patch_queue_cancel.py dist/stage/patch_public_settings.py dist/stage/patch_performance.py dist/stage/cleanup_prior_auto_updater.py
             python3 dist/stage/tests/test_release_package.py
