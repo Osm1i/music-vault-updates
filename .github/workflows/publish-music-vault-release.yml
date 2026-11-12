@@ -314,4 +314,5 @@ jobs:
           else
             gh release create "$TAG" dist/music-vault-casaos-update.zip dist/music-vault-update-manifest.json --title "Music Vault $TAG" --notes-file dist/RELEASE_NOTES.md --target "$GITHUB_SHA"
           fi
+          gh release edit "$TAG" --title "Music Vault $TAG" --notes-file dist/RELEASE_NOTES.md
           echo "Published $TAG"
