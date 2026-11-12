@@ -15,6 +15,7 @@ on:
       - "release-assets/velocity-9.5.1-b64/**"
       - "release-assets/velocity-9.6-b64/**"
       - ".github/velocity-9.7-b64/**"
+      - ".github/velocity-9.8-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -29,6 +30,7 @@ on:
       - "release-assets/velocity-9.5.1-b64/**"
       - "release-assets/velocity-9.6-b64/**"
       - ".github/velocity-9.7-b64/**"
+      - ".github/velocity-9.8-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -59,7 +61,26 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.7.0" ]]; then
+          if [[ "$VERSION" == "9.8.0" ]]; then
+            mkdir -p dist/stage
+            base64 --decode .github/velocity-9.8-b64/part-000.b64 > dist/music-vault-casaos-update.zip
+            unzip -t dist/music-vault-casaos-update.zip
+            unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_8_0.txt)
+            python3 -m pip install --disable-pip-version-check -r dist/stage/tests/requirements.txt
+            python3 -m py_compile dist/stage/payload/mv98_accounts.py dist/stage/tests/test_release_package.py dist/stage/tests/test_accounts_integration.py
+            python3 dist/stage/tests/test_release_package.py
+            python3 dist/stage/tests/test_accounts_integration.py
+            bash -n dist/stage/install-update.sh
+            node --check dist/stage/payload/static/mv98-auth.js
+            test -f dist/stage/payload/mv98_accounts.py
+            test -f dist/stage/payload/static/mv98-auth.js
+            test -f dist/stage/payload/static/mv98-auth.css
+            test ! -e dist/stage/app.py
+            test ! -e dist/stage/musicvault_update_routes.py
+            test ! -e dist/stage/static/mv-update-center.js
+            test ! -e dist/stage/systemd
+          elif [[ "$VERSION" == "9.7.0" ]]; then
             mkdir -p dist/stage
             base64 --decode .github/velocity-9.7-b64/part-000.b64 > dist/music-vault-casaos-update.zip
             unzip -t dist/music-vault-casaos-update.zip
