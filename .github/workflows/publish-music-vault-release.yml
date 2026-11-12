@@ -63,7 +63,13 @@ jobs:
 
           if [[ "$VERSION" == "9.8.0" ]]; then
             mkdir -p dist/stage
-            base64 --decode .github/velocity-9.8-b64/part-000.b64 > dist/music-vault-casaos-update.zip
+            mapfile -t PARTS < <(find .github/velocity-9.8-b64 -maxdepth 1 -type f -name 'part-*.b64' -print | sort)
+            if [ "${#PARTS[@]}" -ne 4 ]; then
+              echo "Expected four ordered Music Vault 9.8.0 package chunks; found ${#PARTS[@]}." >&2
+              exit 2
+            fi
+            for part in "${PARTS[@]}"; do cat "$part"; done > dist/music-vault-9.8.0.b64
+            base64 --decode dist/music-vault-9.8.0.b64 > dist/music-vault-casaos-update.zip
             unzip -t dist/music-vault-casaos-update.zip
             unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
             (cd dist/stage && sha256sum -c SHA256SUMS_9_8_0.txt)
