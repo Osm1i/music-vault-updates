@@ -29,3 +29,12 @@ The 9.2 release applies the 9.1 Velocity asset layer, then adds:
 Release packages must not contain music, SQLite databases, user profiles, playlists, favorites, EQ settings, server credentials or backup archives. Installers must preflight, back up changed code, verify checksums, restart the service, health-check and roll back if installation fails.
 
 For future releases, add a preparation script or package chunk set, update the workflow's version recipe, update release notes, then update `release-assets/MUSIC_VAULT_RELEASE_VERSION.txt` last to trigger publishing.
+
+
+## Vanguard 9.5.0
+
+- Package source: `release-assets/velocity-9.5-b64/part-000.b64` through `part-010.b64`.
+- CI reconstructs the exact package ZIP, verifies archive integrity and SHA-256 checksums, checks Python and JavaScript/Bash syntax, and runs 9.5 package regression checks before publishing.
+- Adds redesigned Songs library, safe hold-to-remove with recoverable file quarantine, optimized Recent Added API, genre-aware Search and Radio, and compact Dynamic Island search-label fix.
+- Installer uses exact v9.4 source fingerprints and zero-fuzz patches; it snapshots only app source/static files, rolls back on errors, and live-checks the service and new endpoints.
+- Existing updater routes, GitHub release client, manifest format, systemd timer/install services and user-approved install flow remain untouched.
