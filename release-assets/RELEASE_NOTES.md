@@ -1,14 +1,14 @@
-# Music Vault 9.8.0 — Private Accounts + Personal Libraries
+# Music Vault v9.9.0 — Classic Profiles Restored
 
-- Private username/password sign-in with a persistent, HTTP-only session.
-- The first registered account inherits the existing Owner Library and becomes the administrator.
-- Separate accounts get independent Library membership, playlists, favorites, listening history, and profile preferences.
-- Returning family members can claim an unclaimed legacy profile by using its existing display name during registration, preserving its personal data.
-- Discover music searches the shared catalogue and adds tracks to an account's Library without copying audio files.
-- Server controls, downloads, imports, scans, queue management, and updater installation are restricted to the administrator.
-- Existing playback, background playback, EQ, 9.6 performance changes, 9.7 responsive styling, and the GitHub updater remain in place.
-- Additive database migration and source backup; no music files are moved, duplicated, or deleted.
+- Removes the private username/password account system and Secure Sign In interface introduced in 9.8.0.
+- Restores the original Music Vault startup and profile-picker flow, with the shared Library and existing family profiles.
+- Keeps the stable 9.6 performance, library, playback, background playback, and EQ behavior, along with the 9.7 responsive presentation.
+- Removes only the 9.8 account startup hook, sign-in stylesheet/script, and account helper module.
+- Creates a source snapshot and a SQLite database snapshot before installation; the update does not alter or migrate the database and does not drop any tables or rows.
+- Existing profiles, playlists, favorites, listening history, queue data, and music files remain in place.
+- Preserves the GitHub Update Center and its user-approved install flow.
+- Includes regression tests, SHA-256 verification, service health checks, and rollback if the restored app does not start correctly.
 
 **Install:** Music Vault → Settings → Update Center → Check for updates → Install update.
 
-Keep the Music Vault URL limited to your trusted home/Tailscale network; anyone with access to the sign-in page can request an account.
+No music files are moved, copied, or deleted.
