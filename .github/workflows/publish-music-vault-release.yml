@@ -86,6 +86,10 @@ jobs:
             test ! -e dist/stage/musicvault_update_routes.py
             test ! -e dist/stage/static/mv-update-center.js
             test ! -e dist/stage/systemd
+            echo "=== DIAGNOSTIC 9.8 INSTALLER START ==="
+            cat dist/stage/install-update.sh
+            echo "=== DIAGNOSTIC 9.8 CHANGELOG START ==="
+            cat dist/stage/CHANGELOG.md
           elif [[ "$VERSION" == "9.7.0" ]]; then
             mkdir -p dist/stage
             base64 --decode .github/velocity-9.7-b64/part-000.b64 > dist/music-vault-casaos-update.zip
