@@ -16,6 +16,7 @@ on:
       - "release-assets/velocity-9.6-b64/**"
       - ".github/velocity-9.7-b64/**"
       - ".github/velocity-9.8-b64/**"
+      - ".github/velocity-9.9/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -61,7 +62,24 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.8.0" ]]; then
+          if [[ "$VERSION" == "9.9.0" ]]; then
+            mkdir -p dist/stage/payload dist/stage/tests
+            cp .github/velocity-9.9/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.9/payload/restore_classic_auth.py dist/stage/payload/restore_classic_auth.py
+            cp .github/velocity-9.9/tests/test_restore_classic.py dist/stage/tests/test_restore_classic.py
+            printf '9.9.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/payload/restore_classic_auth.py dist/stage/tests/test_restore_classic.py
+            python3 dist/stage/tests/test_restore_classic.py
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_9_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_9_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_9_0.txt)
+            test ! -e dist/stage/payload/mv98_accounts.py
+            test ! -e dist/stage/payload/static/mv98-auth.js
+            test ! -e dist/stage/payload/static/mv98-auth.css
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.8.0" ]]; then
             mkdir -p dist/stage
             mapfile -t PARTS < <(find .github/velocity-9.8-b64 -maxdepth 1 -type f -name 'part-*.b64' -print | sort)
             if [ "${#PARTS[@]}" -ne 8 ]; then
@@ -86,10 +104,6 @@ jobs:
             test ! -e dist/stage/musicvault_update_routes.py
             test ! -e dist/stage/static/mv-update-center.js
             test ! -e dist/stage/systemd
-            echo "=== DIAGNOSTIC 9.8 INSTALLER START ==="
-            cat dist/stage/install-update.sh
-            echo "=== DIAGNOSTIC 9.8 CHANGELOG START ==="
-            cat dist/stage/CHANGELOG.md
           elif [[ "$VERSION" == "9.7.0" ]]; then
             mkdir -p dist/stage
             base64 --decode .github/velocity-9.7-b64/part-000.b64 > dist/music-vault-casaos-update.zip
