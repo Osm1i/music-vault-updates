@@ -1,17 +1,16 @@
-# Music Vault v9.13.0 — Single Who's Listening Screen
+# Music Vault v9.14.0 — Profile Screen Recovery
 
-This is a corrective release for the v9.12 profile-picker problem.
+Emergency recovery for users blocked by the additional Who's Listening overlay introduced in v9.12/v9.13.
 
-- Hides the original Music Vault profile chooser while the replacement is active, so users see only one Who's Listening screen.
-- Shows the replacement only when the existing native profile chooser is actually open; it does not trigger on the startup introduction.
-- Removes the v9.12 forced `window.location.reload()` after profile selection. This avoids forcing the app back through its startup intro.
-- Uses the existing profile card's click handler to select a listener; no second profile API or new account mechanism is introduced.
-- Add and Edit temporarily return control to the existing Music Vault forms and handlers, then restore the replacement chooser after those forms close.
-- Removes the previous v9.12 script and stylesheet references and replaces them with one v9.13 selector.
-- No password, PIN, registration, or separate account flow.
-- Does not modify `app.py`, the SQLite database, profile records, playlists, favorites, listening history, queue, music files, playback engine, background playback, or EQ.
-- Includes a database snapshot, template backup, SHA-256 verification, JavaScript/Bash syntax checks, home/status/family API checks, static-asset checks, and automatic rollback on failed installation.
+- Removes the injected v9.10/v9.11/v9.12/v9.13 profile chooser JavaScript and CSS references from the app template.
+- Removes the corresponding stale static assets so a second Who's Listening overlay cannot be loaded.
+- Restores the original native Music Vault profile selector and its original profile-selection actions.
+- Leaves the Intro / Enter Your Vault animation and flow unchanged.
+- No replacement overlay or new profile UI is injected in this recovery release. The priority is restoring access to the working app.
+- Preserves existing family profiles, profile metadata, playlists, favorites, listening history, queue, tracks, and music files.
+- Does not modify `app.py`, SQLite tables/rows, playback, background playback, EQ, or the library.
+- Creates a source/template backup and SQLite online-backup snapshot before changes; includes SHA-256 verification, service/home/status/family API checks, stale-asset checks, and rollback that restores the previous template and assets.
 
-**Install:** Music Vault → Settings → Update Center → Check now → Install update.
+**Install while the UI is blocked:** use the direct Windows CMD SSH command in the release instructions, or use Music Vault's Update Center if it becomes accessible.
 
-The startup introduction is left untouched; this release only changes the Who's Listening selector.
+This is an access recovery release, not the final visual redesign.
