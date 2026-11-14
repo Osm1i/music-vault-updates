@@ -1,13 +1,17 @@
-# Music Vault v9.10.0 — Family Profile Picker
+# Music Vault v9.11.0 — Profile Studio
 
-- Removes the extra Owner profile created by the 9.8 account migration, but only when the database proves it is the newest synthetic profile alongside the two original family profiles.
-- Preserves both original profile records and refuses cleanup if Owner contains saved playlists, favorites, listening history, or Apple Music library data.
-- Removes the unused 9.8 private-account/password table, profile-library migration table, admin trigger, and session secret. Music Vault remains password-free and uses the original shared family-profile flow.
-- Refreshes the “Who's Listening?” chooser with a cleaner dark-and-champagne layout, readable profile tiles, larger tap targets, and a responsive grid that adapts as the family grows.
-- Keeps the existing one-tap profile selection and existing Add Profile action. No registration, login, password, or extra account steps are added.
-- Does not replace the app backend, player, playback engine, background playback, 10-band EQ, library, playlists, favorites, or listening history.
-- Creates a full source and SQLite snapshot before installation. Includes profile-count verification, static-asset checks, SHA-256 verification, and automatic rollback if health checks fail.
+A focused overhaul of **Who's Listening?** built around fast, clear profile selection.
+
+- Replaces the oversized stacked profile rows with a compact adaptive grid: three columns on wide screens, two on phones, and one on very narrow screens.
+- Gives each person a clear avatar, readable name, and a distinct current-listener state.
+- Makes the current profile obvious without adding a confirmation step.
+- Keeps the existing per-profile edit action attached to each person's card.
+- Keeps the existing Add Profile action as a simple tile. It does not add logins, passwords, PINs, registrations, or account switching.
+- Removes the duplicate empty "Choose your profile" area, repeated "Your listening identities" heading, and the "Customize current" / "Replay intro" clutter from this screen.
+- Preserves the existing family profile API and all original profile select, add, and edit handlers.
+- Scoped to the Who's Listening screen only; the Music Vault backend, database, library, playlists, favorites, queue, audio files, player, background playback, and EQ are untouched.
+- Includes responsive, keyboard-focus, and reduced-motion styling checks, SHA-256 verification, a database snapshot, service/API/static-asset health checks, and automatic rollback.
 
 **Install:** Music Vault → Settings → Update Center → Check now → Install update.
 
-No audio files are moved or deleted.
+No profile or music data is migrated, rewritten, or deleted by this release.
