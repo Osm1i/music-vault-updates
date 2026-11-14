@@ -46,13 +46,23 @@
   }
   cards.forEach(card=>card.classList.add('mv101-person-card'));
   if(cards.length>=2){
-   const parents=cards.map(x=>x.parentElement).filter(Boolean);
-   const common=parents.length&&parents.every(p=>p===parents[0])?parents[0]:null;
-   if(common)common.classList.add('mv101-profile-grid');
+   let ancestor=cards[0].parentElement, grid=null;
+   while(ancestor&&ancestor!==modal){
+    const branches=cards.map(card=>{
+     let node=card;
+     while(node.parentElement&&node.parentElement!==ancestor)node=node.parentElement;
+     return node.parentElement===ancestor?node:null;
+    });
+    if(branches.every(Boolean)&&new Set(branches).size===cards.length){grid=ancestor;break;}
+    ancestor=ancestor.parentElement;
+   }
+   if(grid)grid.classList.add('mv101-profile-grid');
   }
   const add=Array.from(modal.querySelectorAll('button,[role="button"],a,[onclick]'))
-   .find(el=>visible(el)&&/^(add|new|create)\s+(person|profile)|^add\s*\+/i.test(normalize(el.innerText||el.textContent))||
-    /add (person|profile)/i.test(String(el.getAttribute('aria-label')||'')));
+   .find(el=>visible(el)&&(
+    /^(add|new|create)\s+(person|profile)|^add\s*\+|^\+\s*(add)?$/i.test(normalize(el.innerText||el.textContent))||
+    /add (person|profile)/i.test(String(el.getAttribute('aria-label')||''))
+   ));
   if(add)add.classList.add('mv101-add-person');
 
   // Existing add/edit controls stay wired to the original Music Vault actions.
