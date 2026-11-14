@@ -9,6 +9,8 @@ assert version=="9.13.0"
 assert "nativeVeil()" in js and "document.querySelectorAll('.profileveil')" in js
 assert "body.classList.add(BODY_CLASS)" in js and "visibility:hidden" in css
 assert "selectableTarget(source,scope)" in js and "action.click()" in js
+assert "stillOpen=!!nativeVeil()" in js
+assert "window.location.reload" not in js
 assert "window.location.reload" not in js
 assert "fetch('/api/profile/active'" not in js and 'fetch("/api/profile/active"' not in js
 assert "/api/family" in js and "/api/auth" not in js and "password" not in js.lower()
@@ -17,7 +19,9 @@ assert "mv112-profile-studio" in installer
 assert "mv113-profile-studio.js" in installer and "mv113-profile-studio.css" in installer
 assert "musicvault.db" in installer and "src.backup(dst)" in installer
 assert "DROP TABLE" not in installer.upper() and "DELETE FROM" not in installer.upper()
-assert "app.py" not in installer
+assert 'install -o "$OWNER" -g "$GROUP" -m 0644 "$TMP/app.py"' not in installer
+assert 'cp -a "$APP_ROOT/app.py"' not in installer
+assert 'install-update.sh' in installer
 assert "/api/family" in installer and "/api/status" in installer
 assert "9.13.0" in installer and "ROLLBACK_ACTIVE=1" in installer
 assert "#mv113-profile-studio" in css and ".profileveil" in css
