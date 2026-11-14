@@ -9,6 +9,8 @@ version=(ROOT/"MUSIC_VAULT_RELEASE_VERSION.txt").read_text(encoding="utf-8").str
 assert version=="9.12.0"
 assert "mv112-profile-studio-overlay" in js
 assert "document.body.appendChild(veil)" in js
+assert "openLegacyAction" in js and "visibleEditor" in js
+assert "findHeading" in js and "who.?s listening" in js
 assert "'/api/family'" in js or '"/api/family"' in js
 assert "'/api/profile/active'" in js or '"/api/profile/active"' in js
 assert "password" not in js.lower() and "/api/auth" not in js
@@ -16,6 +18,7 @@ assert "findAction(scope,'add')" in js
 assert "findAction(root,'edit')" in js
 assert "mv112-profile-card" in css and "mv112-add-card" in css
 assert "@media(max-width:620px)" in css
+assert "repeat(2,minmax(0,1fr))" in css
 assert "prefers-reduced-motion" in css
 assert ":focus-visible" in css
 assert "musicvault.db" in installer and "src.backup(dst)" in installer
