@@ -184,15 +184,18 @@
  #mv112-profile-studio-overlay .mv112-brand-icon{width:37px!important;height:37px!important}
  #mv112-profile-studio-overlay .mv112-intro h1{font-size:clamp(37px,10vw,48px)!important}
  #mv112-profile-studio-overlay .mv112-intro p{font-size:14px!important}
- #mv112-profile-studio-overlay .mv112-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
- #mv112-profile-studio-overlay .mv112-profile-card{min-height:104px!important}
- #mv112-profile-studio-overlay .mv112-select{min-height:102px!important;padding:13px 45px 13px 14px!important;gap:13px!important}
- #mv112-profile-studio-overlay .mv112-avatar{width:61px!important;height:61px!important;min-width:61px!important;flex-basis:61px!important;border-radius:18px!important}
- #mv112-profile-studio-overlay .mv112-name{font-size:16px!important}
- #mv112-profile-studio-overlay .mv112-add-card{min-height:91px!important;display:grid!important;grid-template-columns:52px minmax(0,1fr)!important;grid-template-rows:auto auto!important;justify-items:start!important;align-content:center!important;column-gap:13px!important;padding:14px!important;text-align:left!important}
- #mv112-profile-studio-overlay .mv112-plus{grid-row:1 / span 2;width:48px!important;height:48px!important}
- #mv112-profile-studio-overlay .mv112-add-card strong{align-self:end!important}
- #mv112-profile-studio-overlay .mv112-add-card small{align-self:start!important}
+ #mv112-profile-studio-overlay .mv112-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ #mv112-profile-studio-overlay .mv112-profile-card{min-height:145px!important}
+ #mv112-profile-studio-overlay .mv112-select{min-height:143px!important;flex-direction:column!important;justify-content:center!important;gap:9px!important;padding:22px 8px 12px!important;text-align:center!important}
+ #mv112-profile-studio-overlay .mv112-avatar{width:58px!important;height:58px!important;min-width:58px!important;flex-basis:58px!important;border-radius:18px!important}
+ #mv112-profile-studio-overlay .mv112-profile-info{align-items:center!important;gap:5px!important}
+ #mv112-profile-studio-overlay .mv112-name{max-width:100%!important;font-size:15px!important}
+ #mv112-profile-studio-overlay .mv112-status{font-size:9px!important;letter-spacing:.025em!important}
+ #mv112-profile-studio-overlay .mv112-arrow{display:none!important}
+ #mv112-profile-studio-overlay .mv112-current{top:7px!important;left:7px!important;font-size:7px!important;padding:3px 6px!important}
+ #mv112-profile-studio-overlay .mv112-edit{top:7px!important;right:7px!important;width:26px!important;height:26px!important;min-width:26px!important}
+ #mv112-profile-studio-overlay .mv112-add-card{min-height:145px!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:12px 8px!important;text-align:center!important}
+ #mv112-profile-studio-overlay .mv112-plus{width:51px!important;height:51px!important}
 }
 @media(max-height:560px) and (orientation:landscape){
  #mv112-profile-studio-overlay{align-items:flex-start!important}
@@ -201,4 +204,12 @@
 }
 @media(prefers-reduced-motion:reduce){
  #mv112-profile-studio-overlay *{transition:none!important;animation:none!important}
+}
+@media(max-width:360px){
+ #mv112-profile-studio-overlay .mv112-grid{grid-template-columns:minmax(0,1fr)!important}
+ #mv112-profile-studio-overlay .mv112-profile-card{min-height:104px!important}
+ #mv112-profile-studio-overlay .mv112-select{min-height:102px!important;flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;padding:13px 44px 13px 13px!important}
+ #mv112-profile-studio-overlay .mv112-profile-info{align-items:flex-start!important}
+ #mv112-profile-studio-overlay .mv112-arrow{display:block!important}
+ #mv112-profile-studio-overlay .mv112-add-card{min-height:90px!important;flex-direction:row!important;justify-content:flex-start!important;text-align:left!important}
 }
