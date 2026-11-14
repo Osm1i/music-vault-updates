@@ -18,6 +18,7 @@ on:
       - ".github/velocity-9.8-b64/**"
       - ".github/velocity-9.9/**"
       - ".github/velocity-9.10/**"
+      - ".github/velocity-9.11/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -63,7 +64,27 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.10.0" ]]; then
+          if [[ "$VERSION" == "9.11.0" ]]; then
+            mkdir -p dist/stage/payload dist/stage/tests
+            cp .github/velocity-9.11/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.11/payload/mv111-profile-studio.js dist/stage/payload/mv111-profile-studio.js
+            cp .github/velocity-9.11/payload/mv111-profile-studio.css dist/stage/payload/mv111-profile-studio.css
+            cp .github/velocity-9.11/tests/test_profile_studio.py dist/stage/tests/test_profile_studio.py
+            printf '9.11.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/tests/test_profile_studio.py
+            python3 dist/stage/tests/test_profile_studio.py
+            node --check dist/stage/payload/mv111-profile-studio.js
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_11_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_11_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_11_0.txt)
+            grep -q '9.11.0' dist/stage/install-update.sh
+            grep -q 'mv111-profile-studio.js' dist/stage/install-update.sh
+            grep -q '/api/family' dist/stage/payload/mv111-profile-studio.js
+            ! grep -qi 'password' dist/stage/payload/mv111-profile-studio.js
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.10.0" ]]; then
             mkdir -p dist/stage/payload dist/stage/tests
             cp .github/velocity-9.10/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.10/payload/remove_v98_owner_profile.py dist/stage/payload/remove_v98_owner_profile.py
