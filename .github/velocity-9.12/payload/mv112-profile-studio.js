@@ -9,7 +9,7 @@
   return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0;
  };
  const text=el=>norm(el&&('innerText'in el?el.innerText:el.textContent));
- let busy=false,queued=false,lastRoot=null;
+ let busy=false,queued=false,lastRoot=null,suspended=false;
  async function family(){
   const r=await fetch('/api/family',{credentials:'same-origin',cache:'no-store'});
   if(!r.ok)throw new Error('Music Vault profiles could not be loaded');
@@ -21,8 +21,26 @@
   return {members,active:String(d.active||d.active_member||'').trim()};
  }
  function findHeading(){
-  const all=Array.from(document.querySelectorAll('h1,h2,h3,h4,[role="heading"]')).filter(visible);
-  return all.find(el=>/who.?s listening/.test(text(el)))||null;
+  const all=Array.from(document.querySelectorAll('h1,h2,h3,h4,[role="heading"],[class*="heading"],[class*="title"],div,span'))
+   .filter(visible)
+   .filter(el=>/who.?s listening/.test(text(el))&&text(el).length<90);
+  all.sort((a,b)=>text(a).length-text(b).length);
+  return all[0]||null;
+ }
+ function visibleEditor(){
+  return Array.from(document.querySelectorAll('input:not([type="hidden"]),textarea,select'))
+   .some(el=>visible(el));
+ }
+ function openLegacyAction(action){
+  if(!action)return;
+  suspended=true;
+  removeOverlay();
+  setTimeout(()=>{
+   action.click();
+   setTimeout(()=>{
+    if(!visibleEditor()){suspended=false;schedule();}
+   },900);
+  },30);
  }
  function findScope(heading,members){
   const names=members.map(m=>norm(m.name));
@@ -153,10 +171,7 @@
   if(edit){
    const pencil=document.createElement('button');pencil.type='button';pencil.className='mv112-edit';
    pencil.setAttribute('aria-label','Edit '+member.name+' profile');pencil.textContent='✎';
-   pencil.addEventListener('click',()=>{
-    removeOverlay();
-    setTimeout(()=>edit.click(),30);
-   });
+   pencil.addEventListener('click',()=>openLegacyAction(edit));
    card.appendChild(pencil);
   }
   return card;
@@ -172,10 +187,7 @@
   const title=document.createElement('strong');title.textContent='Add a person';
   const sub=document.createElement('small');sub.textContent='Create another listening space';
   card.append(plus,title,sub);
-  card.addEventListener('click',()=>{
-   removeOverlay();
-   if(addAction)setTimeout(()=>addAction.click(),30);
-  });
+  card.addEventListener('click',()=>openLegacyAction(addAction));
   return card;
  }
  function render(data,scope,heading){
@@ -218,7 +230,7 @@
   if(first)setTimeout(()=>first.focus({preventScroll:true}),50);
  }
  async function scan(){
-  if(busy||document.getElementById(OVERLAY_ID))return;
+  if(busy||suspended||visibleEditor()||document.getElementById(OVERLAY_ID))return;
   busy=true;
   try{
    const heading=findHeading();
@@ -240,6 +252,16 @@
  }
  const observer=new MutationObserver(schedule);
  observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','aria-hidden']});
+ document.addEventListener('click',event=>{
+  const action=event.target&&event.target.closest&&event.target.closest('button,[role="button"],a');
+  const label=action?text(action):'';
+  if(/^(save|done|cancel|close|update|confirm)\b/.test(label)){
+   setTimeout(()=>{suspended=false;schedule();},450);
+  }
+ },true);
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&suspended){setTimeout(()=>{suspended=false;schedule();},250);}
+ });
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});
  schedule();
 })();
