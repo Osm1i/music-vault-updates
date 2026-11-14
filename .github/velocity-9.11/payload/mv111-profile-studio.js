@@ -175,7 +175,12 @@
    if(!names.length){if(currentModal)clear();return;}
    const title=Array.from(modal.querySelectorAll('h1,h2,h3')).find(el=>/who.?s listening|who.?s listenin/.test(textOf(el)));
    if(!title){if(currentModal)clear();return;}
-   const signature=names.join('|')+'|'+family.active+'|'+textOf(modal);
+   const profilePresence=names.map(name=>{
+    const key=norm(name);
+    return modal.querySelectorAll(SELECTABLE).length&&Array.from(modal.querySelectorAll(SELECTABLE)).some(el=>visible(el)&&textOf(el).startsWith(key))?'1':'0';
+   }).join('');
+   const hasAdd=Array.from(modal.querySelectorAll(SELECTABLE)).some(el=>visible(el)&&/^add profile\b/.test(textOf(el)));
+   const signature=names.join('|')+'|'+family.active+'|'+norm(title.textContent)+'|'+profilePresence+'|'+(hasAdd?'add':'noadd');
    if(currentModal===modal&&signature===lastSignature)return;
    if(currentModal)clear();
    currentModal=modal;
@@ -254,7 +259,7 @@
  }
  const observer=new MutationObserver(schedule);
  observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','aria-hidden']});
- document.addEventListener('click',()=>setTimeout(schedule,30),true);
+ document.addEventListener('click',()=>setTimeout(()=>{familyCache.at=0;schedule();},350),true);
  window.addEventListener('resize',schedule,{passive:true});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});
  schedule();
