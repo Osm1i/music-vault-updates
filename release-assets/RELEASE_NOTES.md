@@ -1,17 +1,17 @@
-# Music Vault v9.12.0 — Who's Listening? Overhaul
+# Music Vault v9.13.0 — Single Who's Listening Screen
 
-This release **replaces the old profile chooser visually** with a new, self-contained full-screen selection experience. It does not merely add another CSS layer to the previous chooser.
+This is a corrective release for the v9.12 profile-picker problem.
 
-- New compact Profile Studio surface with a simplified heading, short guidance, and an adaptive two-column profile grid on phones.
-- Saved family members load from the existing `/api/family` endpoint; no separate accounts or password system is introduced.
-- Selecting a person uses the existing `/api/profile/active` route and refreshes into that listener's existing Music Vault space.
-- Profile avatars are reused from the existing chooser when available; otherwise a simple initials treatment is shown.
-- The active listener is marked clearly.
-- Add Person and Edit actions forward to the existing Music Vault controls rather than implementing a new profile database or new account flow.
-- Removes the previous guessed-style 9.10/9.11 script layers from the template and replaces them with one dedicated Profile Studio renderer.
-- Does not modify `app.py`, the SQLite database, profile records, playlists, favorites, history, queue, audio files, player, background playback, or EQ.
-- Includes a read-only database snapshot, template backup, SHA-256 verification, JavaScript/Bash syntax checks, existing API/static-asset health checks, and rollback on failed installation.
+- Hides the original Music Vault profile chooser while the replacement is active, so users see only one Who's Listening screen.
+- Shows the replacement only when the existing native profile chooser is actually open; it does not trigger on the startup introduction.
+- Removes the v9.12 forced `window.location.reload()` after profile selection. This avoids forcing the app back through its startup intro.
+- Uses the existing profile card's click handler to select a listener; no second profile API or new account mechanism is introduced.
+- Add and Edit temporarily return control to the existing Music Vault forms and handlers, then restore the replacement chooser after those forms close.
+- Removes the previous v9.12 script and stylesheet references and replaces them with one v9.13 selector.
+- No password, PIN, registration, or separate account flow.
+- Does not modify `app.py`, the SQLite database, profile records, playlists, favorites, listening history, queue, music files, playback engine, background playback, or EQ.
+- Includes a database snapshot, template backup, SHA-256 verification, JavaScript/Bash syntax checks, home/status/family API checks, static-asset checks, and automatic rollback on failed installation.
 
 **Install:** Music Vault → Settings → Update Center → Check now → Install update.
 
-No passwords, PINs, registration, or account switching. The old profile handlers remain the source of truth for Add and Edit.
+The startup introduction is left untouched; this release only changes the Who's Listening selector.
