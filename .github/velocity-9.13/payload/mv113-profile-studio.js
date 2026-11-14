@@ -10,7 +10,7 @@
   return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0;
  };
  const text=el=>norm(el&&('innerText'in el?el.innerText:el.textContent));
- let busy=false,queued=false,suspended=false,shown=false;
+ let busy=false,queued=false,suspended=false,shown=false,suspendUntil=0;
 
  async function getFamily(){
   const response=await fetch('/api/family',{credentials:'same-origin',cache:'no-store'});
@@ -124,13 +124,14 @@
   return Array.from(document.querySelectorAll('input:not([type="hidden"]),textarea,select')).some(visible);
  }
  function resumeAfterEditor(){
-  if(!suspended||editorOpen())return;
+  if(!suspended||Date.now()<suspendUntil||editorOpen())return;
   suspended=false;shown=false;
   schedule();
  }
  function openLegacyAction(action){
   if(!action)return;
   suspended=true;
+  suspendUntil=Date.now()+1000;
   const overlay=document.getElementById(OVERLAY_ID);
   if(overlay)overlay.remove();
   document.body.classList.remove(BODY_CLASS);
@@ -264,9 +265,8 @@
   queued=true;requestAnimationFrame(()=>{queued=false;scan();});
  }
  const observer=new MutationObserver(()=>{
-  if(suspended){
-   const editor=editorOpen();
-   if(!editor){suspended=false;shown=false;document.body.classList.remove(BODY_CLASS);}
+  if(suspended&&Date.now()>=suspendUntil&&!editorOpen()){
+   suspended=false;shown=false;document.body.classList.remove(BODY_CLASS);
   }
   schedule();
  });
