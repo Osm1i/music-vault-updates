@@ -103,9 +103,8 @@
   }
   return wrap;
  }
- function makeCard(member,scope,active){
-  const original=findProfileRoot(scope,member.name,[]);
-  const root=original||findProfileRoot(scope,member.name,[member]);
+ function makeCard(member,scope,active,members){
+  const root=findProfileRoot(scope,member.name,members);
   const edit=findAction(root,'edit');
   const isCurrent=!!active||(!!root&&text(root).includes('current profile'));
   const card=document.createElement('article');
@@ -195,7 +194,7 @@
   const grid=document.createElement('div');grid.className='mv112-grid';
   data.members.forEach(member=>{
    const active=data.active?norm(data.active)===norm(member.name):false;
-   grid.appendChild(makeCard(member,scope,active));
+   grid.appendChild(makeCard(member,scope,active,data.members));
   });
   const addAction=findAction(scope,'add');
   if(addAction)grid.appendChild(makeAddTile(addAction));
