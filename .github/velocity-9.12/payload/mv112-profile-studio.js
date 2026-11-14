@@ -107,15 +107,16 @@
   const original=findProfileRoot(scope,member.name,[]);
   const root=original||findProfileRoot(scope,member.name,[member]);
   const edit=findAction(root,'edit');
+  const isCurrent=!!active||(!!root&&text(root).includes('current profile'));
   const card=document.createElement('article');
-  card.className='mv112-profile-card'+(active?' is-current':'');
+  card.className='mv112-profile-card'+(isCurrent?' is-current':'');
   const select=document.createElement('button');
   select.type='button';select.className='mv112-select';
   select.setAttribute('aria-label','Listen as '+member.name);
   const avatar=makeAvatar(root,member);
   const info=document.createElement('span');info.className='mv112-profile-info';
   const name=document.createElement('strong');name.className='mv112-name';name.textContent=member.name;
-  const status=document.createElement('small');status.className='mv112-status';status.textContent=active?'Currently listening':'Personal listening space';
+  const status=document.createElement('small');status.className='mv112-status';status.textContent=isCurrent?'Currently listening':'Personal listening space';
   info.append(name,status);
   const arrow=document.createElement('span');arrow.className='mv112-arrow';arrow.textContent='›';arrow.setAttribute('aria-hidden','true');
   select.append(avatar,info,arrow);
@@ -141,7 +142,7 @@
    }
   });
   card.appendChild(select);
-  if(active){
+  if(isCurrent){
    const badge=document.createElement('span');badge.className='mv112-current';badge.textContent='CURRENT';card.appendChild(badge);
   }
   if(edit){
