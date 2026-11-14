@@ -79,6 +79,12 @@
    const small=Array.from(root.querySelectorAll('button,[role="button"],a,[onclick]')).filter(visible);
    const glyph=small.find(el=>/^[✎✏🖉]$/.test((el.textContent||'').trim()));
    if(glyph)return glyph;
+  }else{
+   const fallback=Array.from(root.querySelectorAll('button,div,li,article,section'))
+    .filter(visible)
+    .filter(el=>/^(add|new|create)\s+(profile|person)\b/.test(text(el))&&text(el).length<180);
+   fallback.sort((a,b)=>text(a).length-text(b).length);
+   if(fallback.length)return fallback[0];
   }
   return null;
  }
@@ -136,7 +142,7 @@
     if(message)message.textContent=error.message||'Could not switch profiles. Try again.';
     // Use the existing profile card handler as a fallback if the legacy
     // profile endpoint has a different response contract.
-    const legacy=findProfileRoot(scope,member.name,[member]);
+    const legacy=findProfileRoot(scope,member.name,members);
     if(legacy&&legacy!==select)legacy.click();
    }
   });
