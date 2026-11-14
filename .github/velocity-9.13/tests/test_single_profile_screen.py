@@ -11,6 +11,8 @@ assert "body.classList.add(BODY_CLASS)" in js and "visibility:hidden" in css
 assert "selectableTarget(source,scope)" in js and "action.click()" in js
 assert "stillOpen=!!nativeVeil()" in js
 assert "window.location.reload" not in js
+assert "stillOpen=!!nativeVeil()" in js
+assert "window.location.reload" not in js
 assert "window.location.reload" not in js
 assert "fetch('/api/profile/active'" not in js and 'fetch("/api/profile/active"' not in js
 assert "/api/family" in js and "/api/auth" not in js and "password" not in js.lower()
