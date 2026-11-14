@@ -11,7 +11,6 @@
  };
  const text=el=>norm(el&&('innerText'in el?el.innerText:el.textContent));
  let busy=false,queued=false,suspended=false,shown=false;
- let currentVeil=null;
 
  async function getFamily(){
   const response=await fetch('/api/family',{credentials:'same-origin',cache:'no-store'});
@@ -121,6 +120,14 @@
   }
   return avatar;
  }
+ function editorOpen(){
+  return Array.from(document.querySelectorAll('input:not([type="hidden"]),textarea,select')).some(visible);
+ }
+ function resumeAfterEditor(){
+  if(!suspended||editorOpen())return;
+  suspended=false;shown=false;
+  schedule();
+ }
  function openLegacyAction(action){
   if(!action)return;
   suspended=true;
@@ -128,23 +135,35 @@
   if(overlay)overlay.remove();
   document.body.classList.remove(BODY_CLASS);
   setTimeout(()=>action.click(),40);
-  const resume=()=>{
-   if(!suspended)return;
-   const editor=Array.from(document.querySelectorAll('input:not([type="hidden"]),textarea,select'))
-    .some(visible);
-   if(!editor){
-    suspended=false;
+  setTimeout(resumeAfterEditor,1100);
+ }
+ function activateExistingProfile(action,select,feedback){
+  if(!action){feedback.textContent='This profile is unavailable. Please try again.';return;}
+  select.disabled=true;select.classList.add('is-loading');
+  // Invoke Music Vault's own profile-card handler. Do not perform a second
+  // API request or reload the page (which restarts the intro animation).
+  try{action.click();}
+  catch(_){
+   select.disabled=false;select.classList.remove('is-loading');
+   feedback.textContent='Could not open that profile. Please try again.';
+   return;
+  }
+  setTimeout(()=>{
+   // Temporarily remove our hiding class to see whether Music Vault itself
+   // closed its native chooser. The custom screen stays in place during this
+   // synchronous check, so the old chooser never flashes back on screen.
+   document.body.classList.remove(BODY_CLASS);
+   const stillOpen=!!nativeVeil();
+   if(stillOpen){
+    document.body.classList.add(BODY_CLASS);
+    select.disabled=false;select.classList.remove('is-loading');
+    feedback.textContent='Music Vault did not switch profiles. Tap again to retry.';
+   }else{
+    const overlay=document.getElementById(OVERLAY_ID);
+    if(overlay)overlay.remove();
     shown=false;
-    schedule();
    }
-  };
-  setTimeout(resume,1000);
-  document.addEventListener('click',event=>{
-   const action=event.target&&event.target.closest&&event.target.closest('button,[role="button"],a');
-   if(action&&/^(save|done|cancel|close|update|confirm)\b/.test(text(action))){
-    setTimeout(resume,450);
-   }
-  },{once:false});
+  },900);
  }
  function profileCard(member,scope,family){
   const source=findProfileRoot(scope,member.name,family.members);
@@ -166,22 +185,7 @@
   const arrow=document.createElement('span');arrow.className='mv113-arrow';arrow.textContent='›';
   select.append(details,arrow);
   const feedback=document.createElement('span');feedback.className='mv113-card-error';feedback.setAttribute('role','status');
-  select.addEventListener('click',()=>{
-   if(!action){feedback.textContent='This profile is unavailable. Reopen the original selector to try again.';return;}
-   select.disabled=true;select.classList.add('is-loading');
-   // Call the existing profile-selection control. No second API flow and no forced page reload.
-   document.body.classList.add(BODY_CLASS);
-   const overlay=document.getElementById(OVERLAY_ID);
-   if(overlay)overlay.remove();
-   shown=true;
-   try{action.click();}
-   catch(_){
-    document.body.classList.remove(BODY_CLASS);
-    select.disabled=false;select.classList.remove('is-loading');
-    feedback.textContent='Could not open that profile. Please try again.';
-    shown=false;schedule();
-   }
-  });
+  select.addEventListener('click',()=>activateExistingProfile(action,select,feedback));
   card.append(select,feedback);
   if(active){
    const badge=document.createElement('span');badge.className='mv113-current';badge.textContent='CURRENT';
@@ -234,7 +238,7 @@
   panel.append(header,intro,grid,footer);overlay.appendChild(panel);
   document.body.classList.add(BODY_CLASS);
   document.body.appendChild(overlay);
-  currentVeil=veil;shown=true;
+  shown=true;
   const first=grid.querySelector('.mv113-select');
   if(first)setTimeout(()=>first.focus({preventScroll:true}),30);
  }
@@ -261,17 +265,14 @@
  }
  const observer=new MutationObserver(()=>{
   if(suspended){
-   const editor=Array.from(document.querySelectorAll('input:not([type="hidden"]),textarea,select')).some(visible);
+   const editor=editorOpen();
    if(!editor){suspended=false;shown=false;document.body.classList.remove(BODY_CLASS);}
   }
   schedule();
  });
  observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','aria-hidden']});
  document.addEventListener('click',()=>setTimeout(()=>{
-  if(suspended){
-   const editor=Array.from(document.querySelectorAll('input:not([type="hidden"]),textarea,select')).some(visible);
-   if(!editor){suspended=false;shown=false;}
-  }
+  if(suspended)resumeAfterEditor();
   schedule();
  },500),true);
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});
