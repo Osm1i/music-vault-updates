@@ -1,14 +1,13 @@
-# Music Vault v9.9.0 — Classic Profiles Restored
+# Music Vault v9.10.0 — Family Profile Picker
 
-- Removes the private username/password account system and Secure Sign In interface introduced in 9.8.0.
-- Restores the original Music Vault startup and profile-picker flow, with the shared Library and existing family profiles.
-- Keeps the stable 9.6 performance, library, playback, background playback, and EQ behavior, along with the 9.7 responsive presentation.
-- Removes only the 9.8 account startup hook, sign-in stylesheet/script, and account helper module.
-- Creates a source snapshot and a SQLite database snapshot before installation; the update does not alter or migrate the database and does not drop any tables or rows.
-- Existing profiles, playlists, favorites, listening history, queue data, and music files remain in place.
-- Preserves the GitHub Update Center and its user-approved install flow.
-- Includes regression tests, SHA-256 verification, service health checks, and rollback if the restored app does not start correctly.
+- Removes the extra Owner profile created by the 9.8 account migration, but only when the database proves it is the newest synthetic profile alongside the two original family profiles.
+- Preserves both original profile records and refuses cleanup if Owner contains saved playlists, favorites, listening history, or Apple Music library data.
+- Removes the unused 9.8 private-account/password table, profile-library migration table, admin trigger, and session secret. Music Vault remains password-free and uses the original shared family-profile flow.
+- Refreshes the “Who's Listening?” chooser with a cleaner dark-and-champagne layout, readable profile tiles, larger tap targets, and a responsive grid that adapts as the family grows.
+- Keeps the existing one-tap profile selection and existing Add Profile action. No registration, login, password, or extra account steps are added.
+- Does not replace the app backend, player, playback engine, background playback, 10-band EQ, library, playlists, favorites, or listening history.
+- Creates a full source and SQLite snapshot before installation. Includes profile-count verification, static-asset checks, SHA-256 verification, and automatic rollback if health checks fail.
 
-**Install:** Music Vault → Settings → Update Center → Check for updates → Install update.
+**Install:** Music Vault → Settings → Update Center → Check now → Install update.
 
-No music files are moved, copied, or deleted.
+No audio files are moved or deleted.
