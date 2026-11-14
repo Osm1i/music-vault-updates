@@ -31,6 +31,7 @@ def fixture(path, owner_created=30, owner_has_data=False):
       INSERT INTO user_accounts VALUES(1,'owneruser','Owner','fake-hash');
       INSERT INTO tracks VALUES(1,'Existing track');
       INSERT INTO profile_library VALUES('Owner',1,30,'legacy-owner');
+      INSERT INTO profile_preferences VALUES('Owner','O');
     """)
     if owner_has_data:
         c.execute("INSERT INTO personal_favorites VALUES('Owner',1,33)")
@@ -47,6 +48,7 @@ def main():
         assert c.execute("SELECT COUNT(*) FROM family_members").fetchone()[0]==2
         assert c.execute("SELECT COUNT(*) FROM tracks").fetchone()[0]==1
         assert c.execute("SELECT COUNT(*) FROM personal_favorites").fetchone()[0]==0
+        assert c.execute("SELECT COUNT(*) FROM profile_preferences WHERE member='Owner'").fetchone()[0]==0
         tables={r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert "user_accounts" not in tables and "profile_library" not in tables
         assert c.execute("SELECT value FROM settings WHERE key='active_member'").fetchone()[0]=="Maya"
