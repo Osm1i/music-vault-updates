@@ -21,6 +21,9 @@ rollback(){
   systemctl stop "$SERVICE" 2>/dev/null || true
   [[ -f "$BACKUP/templates/index.html" ]] && cp -a "$BACKUP/templates/index.html" "$APP_ROOT/templates/index.html"
   if [[ "$HAD_VERSION" == "1" && -f "$BACKUP/data/installed_version.txt" ]]; then cp -a "$BACKUP/data/installed_version.txt" "$APP_ROOT/data/installed_version.txt"; else printf '%s\n' "$OLD_VERSION" > "$APP_ROOT/data/installed_version.txt"; fi
+  for file in mv101-profile-chooser.js mv101-profile-chooser.css mv111-profile-studio.js mv111-profile-studio.css mv112-profile-studio.js mv112-profile-studio.css mv113-profile-studio.js mv113-profile-studio.css; do
+   [[ -f "$BACKUP/static/$file" ]] && cp -a "$BACKUP/static/$file" "$APP_ROOT/static/$file"
+  done
   chown "$OWNER:$GROUP" "$APP_ROOT/templates/index.html" "$APP_ROOT/data/installed_version.txt" 2>/dev/null || true
   systemctl restart "$SERVICE"
   echo "Rollback completed. Database and music were never modified. Backup: $BACKUP" >&2
