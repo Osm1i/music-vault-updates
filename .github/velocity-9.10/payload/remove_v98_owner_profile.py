@@ -11,7 +11,6 @@ PERSONAL_TABLES = (
     ("personal_playlists", "member"),
     ("personal_favorites", "member"),
     ("personal_history", "member"),
-    ("profile_preferences", "member"),
     ("apple_library_tracks", "member"),
     ("apple_library_playlists", "member"),
 )
@@ -94,6 +93,10 @@ def remove_v98_owner_profile(db_path: str | Path) -> dict:
                     "); refusing to remove or merge it automatically."
                 )
 
+            # The profile-preference row is created automatically by the 9.8 account
+            # registration flow, unlike the legacy listening data checked above.
+            if "profile_preferences" in tables and "member" in _columns(conn, "profile_preferences"):
+                conn.execute("DELETE FROM profile_preferences WHERE lower(member)=lower(?)", (owner["name"],))
             conn.execute("DELETE FROM family_members WHERE id=?", (owner["id"],))
             removed_name = str(owner["name"])
 
