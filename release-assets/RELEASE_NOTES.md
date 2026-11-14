@@ -1,16 +1,10 @@
-# Music Vault v9.14.0 — Profile Screen Recovery
+# Music Vault v9.15.0 — Bottom Island Position Adjustment
 
-Emergency recovery for users blocked by the additional Who's Listening overlay introduced in v9.12/v9.13.
+A small positioning-only refinement to the floating mini-player and bottom navigation island.
 
-- Removes the injected v9.10/v9.11/v9.12/v9.13 profile chooser JavaScript and CSS references from the app template.
-- Removes the corresponding stale static assets so a second Who's Listening overlay cannot be loaded.
-- Restores the original native Music Vault profile selector and its original profile-selection actions.
-- Leaves the Intro / Enter Your Vault animation and flow unchanged.
-- No replacement overlay or new profile UI is injected in this recovery release. The priority is restoring access to the working app.
-- Preserves existing family profiles, profile metadata, playlists, favorites, listening history, queue, tracks, and music files.
-- Does not modify `app.py`, SQLite tables/rows, playback, background playback, EQ, or the library.
-- Creates a source/template backup and SQLite online-backup snapshot before changes; includes SHA-256 verification, service/home/status/family API checks, stale-asset checks, and rollback that restores the previous template and assets.
-
-**Install while the UI is blocked:** use the direct Windows CMD SSH command in the release instructions, or use Music Vault's Update Center if it becomes accessible.
-
-This is an access recovery release, not the final visual redesign.
+- Drops the combined Bottom Island 8px lower while keeping the iPhone safe-area inset intact.
+- Aligns the historical CSS rules and both runtime JavaScript position controllers to the same bottom offset, preventing one controller from pulling the island back up.
+- Bumps the consolidated CSS/JavaScript asset URLs and service-worker cache key so clients receive the corrected layout.
+- Leaves player controls, navigation handlers, playback, background playback, EQ, library, playlists, profiles, queue, database rows, and music files unchanged.
+- Uses an online SQLite backup snapshot and source-file backups before patching; verifies the home page and served CSS/JavaScript/service-worker assets, with rollback on failed checks.
+- Does not restart Music Vault, avoiding playback interruption.
