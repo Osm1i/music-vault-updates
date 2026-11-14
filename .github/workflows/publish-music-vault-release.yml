@@ -17,6 +17,7 @@ on:
       - ".github/velocity-9.7-b64/**"
       - ".github/velocity-9.8-b64/**"
       - ".github/velocity-9.9/**"
+      - ".github/velocity-9.10/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -62,7 +63,27 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.9.0" ]]; then
+          if [[ "$VERSION" == "9.10.0" ]]; then
+            mkdir -p dist/stage/payload dist/stage/tests
+            cp .github/velocity-9.10/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.10/payload/remove_v98_owner_profile.py dist/stage/payload/remove_v98_owner_profile.py
+            cp .github/velocity-9.10/payload/mv101-profile-chooser.js dist/stage/payload/mv101-profile-chooser.js
+            cp .github/velocity-9.10/payload/mv101-profile-chooser.css dist/stage/payload/mv101-profile-chooser.css
+            cp .github/velocity-9.10/tests/test_profile_restore.py dist/stage/tests/test_profile_restore.py
+            printf '9.10.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/payload/remove_v98_owner_profile.py dist/stage/tests/test_profile_restore.py
+            python3 dist/stage/tests/test_profile_restore.py
+            node --check dist/stage/payload/mv101-profile-chooser.js
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_10_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_10_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_10_0.txt)
+            grep -q '9.10.0' dist/stage/install-update.sh
+            grep -q 'mv101-profile-chooser.js' dist/stage/install-update.sh
+            grep -q 'profile_library_migrated_v1' dist/stage/payload/remove_v98_owner_profile.py
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.9.0" ]]; then
             mkdir -p dist/stage/payload dist/stage/tests
             cp .github/velocity-9.9/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.9/payload/restore_classic_auth.py dist/stage/payload/restore_classic_auth.py
