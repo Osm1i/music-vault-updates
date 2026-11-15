@@ -101,7 +101,7 @@ jobs:
 
           if [[ "$VERSION" == "9.27.0" ]]; then
             mkdir -p dist/stage/tests
-            base64 --decode .github/velocity-9.27/patch_v927_features.py.gz.b64 | gzip -dc > dist/stage/patch_v927_features.py
+            cat .github/velocity-9.27/patch-parts/part-*.b64 | base64 --decode | gzip -dc > dist/stage/patch_v927_features.py
             base64 --decode .github/velocity-9.27/install-update.sh.gz.b64 | gzip -dc > dist/stage/install-update.sh
             base64 --decode .github/velocity-9.27/tests/test_v927_features.py.gz.b64 | gzip -dc > dist/stage/tests/test_v927_features.py
             base64 --decode .github/velocity-9.27/tests/test_installer_e2e.py.gz.b64 | gzip -dc > dist/stage/tests/test_installer_e2e.py
