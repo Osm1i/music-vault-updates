@@ -1,26 +1,18 @@
-# Music Vault v9.27.0 — Reliability Center, smarter downloads, library intelligence and playlist controls
+# Music Vault v9.28.0 — correct single-track album detection
 
-## Reliability Center
-- Adds a Settings dashboard for app-service status, SQLite size, free storage, queue counts, backup age and library diagnostics.
-- Creates daily SQLite online backups, verifies each snapshot with `PRAGMA integrity_check`, retains the newest 10, and offers a manual backup/download action.
-- Library diagnostics report duplicate content-hash groups, same-metadata groups and missing file references.
-- Safe re-index triggers the app's existing scanner. It does not move, delete or re-encode audio files.
+## Album metadata fix
+- Treats generic album placeholders such as `Single`, `Singles`, `Unknown Album`, blank and similar "no album" labels as missing metadata.
+- Uses the track title as the album name for standalone tracks, so each single appears as its own album instead of many unrelated tracks being grouped under "Single".
+- Keeps genuine album tags (for example, an actual album name) unchanged.
+- Applies the same fallback to files imported from uploads and URL downloads.
 
-## Smarter YouTube downloads
-- Keeps `bestaudio/best` as the source selector and retains existing metadata/artwork processing.
-- Adapts HLS/DASH fragment concurrency to CPU and available memory, adds retry/backoff for transient HTTP, fragment and extractor failures, and enables partial-download continuation.
-- Preserves the stream-copy Opus remux path; no forced lossy re-encoding is introduced.
-- Detects YouTube's "Sign in to confirm you're not a bot" response and shows a precise explanation instead of a generic failure.
-- Supports a user's own Netscape-format `cookies.txt` file at `/opt/music-vault/data/youtube-cookies.txt` (or `MUSICVAULT_YOUTUBE_COOKIES`). The file is private, set to mode 600, never included in the release, and never exposed by the app.
-- YouTube's verification is not bypassed. When YouTube challenges a request, the user must provide their own signed-in browser cookies; cookies expire and should never be shared.
-
-## Playlist deletion
-- Adds a Delete action to each profile-owned playlist with a confirmation prompt.
-- The backend validates playlist ownership against the active profile and deletes only playlist rows and their join records.
-- Songs remain in the shared music library; audio files are never deleted.
+## Existing library cleanup
+- Runs a one-time, non-destructive database migration that changes existing placeholder album labels to each track's title.
+- Splits distinct single tracks into separate Albums and Recently Added cards even when their files remain in a legacy shared `Artist/Single` directory.
+- Album detail and artwork lookups are scoped to the selected album, preventing other tracks in that legacy folder from appearing in the wrong album.
+- Does not move, rename or delete any audio files or sidecars.
 
 ## Preservation and safety
-- Existing Android touch fixes, red favorite heart, mini-player X, Recently Added Top Picks layout, animated recommendation cards, playback JS and service worker are preserved.
-- Database, profiles, favorites, listening history and downloaded audio are not replaced.
-- The installer backs up changed application files and the installed-version marker, performs live checks, and restores the previous files on any failed verification.
-- Both the feature regression suite and full installer success/forced-failure rollback simulation must pass before GitHub publishes the ZIP.
+- Keeps playback, playlists, favorites, the mini-player, Android touch support, Top Picks layout, Home animations and YouTube download settings unchanged.
+- The installer backs up app.py and the SQLite database, verifies Albums and Recently Added live API responses, fingerprints protected UI assets, and restores the previous app/database on failed checks.
+- GitHub CI runs metadata regression tests plus successful-install and forced-rollback simulations before publishing.
