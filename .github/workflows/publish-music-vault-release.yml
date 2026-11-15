@@ -38,6 +38,7 @@ on:
       - ".github/velocity-9.26/**"
       - ".github/velocity-9.26.1/**"
       - ".github/velocity-9.26.2/**"
+      - ".github/velocity-9.27/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -67,6 +68,7 @@ on:
       - ".github/velocity-9.26/**"
       - ".github/velocity-9.26.1/**"
       - ".github/velocity-9.26.2/**"
+      - ".github/velocity-9.27/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -97,7 +99,35 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.26.2" ]]; then
+          if [[ "$VERSION" == "9.27.0" ]]; then
+            mkdir -p dist/stage/tests
+            base64 --decode .github/velocity-9.27/patch_v927_features.py.gz.b64 | gzip -dc > dist/stage/patch_v927_features.py
+            base64 --decode .github/velocity-9.27/install-update.sh.gz.b64 | gzip -dc > dist/stage/install-update.sh
+            base64 --decode .github/velocity-9.27/tests/test_v927_features.py.gz.b64 | gzip -dc > dist/stage/tests/test_v927_features.py
+            base64 --decode .github/velocity-9.27/tests/test_installer_e2e.py.gz.b64 | gzip -dc > dist/stage/tests/test_installer_e2e.py
+            cp .github/velocity-9.27/mv927-reliability.css dist/stage/mv927-reliability.css
+            cp .github/velocity-9.27/mv927-reliability.js dist/stage/mv927-reliability.js
+            printf '9.27.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/patch_v927_features.py dist/stage/tests/test_v927_features.py dist/stage/tests/test_installer_e2e.py
+            python3 dist/stage/tests/test_v927_features.py
+            python3 dist/stage/tests/test_installer_e2e.py
+            bash -n dist/stage/install-update.sh
+            node --check dist/stage/mv927-reliability.js
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_27_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_27_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_27_0.txt)
+            grep -q '9.27.0' dist/stage/install-update.sh
+            grep -q 'bestaudio/best' dist/stage/patch_v927_features.py
+            grep -q 'fragment_retries' dist/stage/patch_v927_features.py
+            grep -q 'cookiefile' dist/stage/patch_v927_features.py
+            grep -Fq "methods=['DELETE']" dist/stage/patch_v927_features.py
+            grep -q 'mv927Reliability' dist/stage/mv927-reliability.js
+            test -f dist/stage/tests/test_v927_features.py
+            test -f dist/stage/tests/test_installer_e2e.py
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.26.2" ]]; then
             mkdir -p dist/stage/tests
             cp .github/velocity-9.26.2/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.26.2/patch_ambient_cards.py dist/stage/patch_ambient_cards.py
