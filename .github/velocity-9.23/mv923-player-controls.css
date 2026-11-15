@@ -1,0 +1,72 @@
+/* Music Vault 9.23.0 — clear action and explicit favorite states. */
+#miniLike,
+#nowFavorite {
+  color: #8e8e93 !important;
+  transition: color .16s ease, transform .16s ease;
+}
+#miniLike.is-favorite,
+#nowFavorite.is-favorite,
+button[data-mv923-favorite-control].is-favorite {
+  color: #ff375f !important;
+}
+#miniLike.is-favorite,
+#nowFavorite.is-favorite {
+  font-weight: 850 !important;
+  transform: scale(1.06);
+}
+button[data-mv923-favorite-control] {
+  transition: color .16s ease, transform .16s ease;
+}
+
+.mini-clear {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 38px;
+  min-width: 34px;
+  min-height: 38px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  margin-left: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8e8e93;
+  font-size: 21px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.mini-clear:hover,
+.mini-clear:focus-visible {
+  color: #ff375f;
+  background: #ff375f12;
+  outline: none;
+}
+
+#miniPlayer[hidden] {
+  display: none !important;
+}
+@media (max-width: 760px) {
+  .mini-clear {
+    flex-basis: 30px;
+    width: 30px;
+    min-width: 30px;
+    height: 40px;
+    min-height: 40px;
+    font-size: 20px;
+    margin-left: 0;
+  }
+  #miniLike {
+    min-width: 32px;
+    min-height: 40px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #miniLike,
+  #nowFavorite,
+  .mini-clear,
+  button[data-mv923-favorite-control] {
+    transition: none !important;
+  }
+}

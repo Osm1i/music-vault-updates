@@ -31,6 +31,7 @@ on:
       - ".github/velocity-9.20/**"
       - ".github/velocity-9.21-b64/**"
       - ".github/velocity-9.22/**"
+      - ".github/velocity-9.23/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -53,6 +54,7 @@ on:
       - ".github/velocity-9.20/**"
       - ".github/velocity-9.21-b64/**"
       - ".github/velocity-9.22/**"
+      - ".github/velocity-9.23/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -83,7 +85,31 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.22.0" ]]; then
+          if [[ "$VERSION" == "9.23.0" ]]; then
+            mkdir -p dist/stage/tests
+            cp .github/velocity-9.23/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.23/patch_player_controls.py dist/stage/patch_player_controls.py
+            cp .github/velocity-9.23/mv923-player-controls.js dist/stage/mv923-player-controls.js
+            cp .github/velocity-9.23/mv923-player-controls.css dist/stage/mv923-player-controls.css
+            cp .github/velocity-9.23/tests/test_player_controls.py dist/stage/tests/test_player_controls.py
+            printf '9.23.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/patch_player_controls.py dist/stage/tests/test_player_controls.py
+            python3 dist/stage/tests/test_player_controls.py
+            node --check dist/stage/mv923-player-controls.js
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_23_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_23_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_23_0.txt)
+            grep -q '9.23.0' dist/stage/install-update.sh
+            grep -q 'window.mv923ClearPlayer' dist/stage/patch_player_controls.py
+            grep -q '/api/personal/' dist/stage/mv923-player-controls.js
+            grep -q '#miniLike.is-favorite' dist/stage/mv923-player-controls.css
+            grep -q 'MutationObserver' dist/stage/mv923-player-controls.js
+            test -f dist/stage/tests/test_player_controls.py
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.22.0" ]]; then
             mkdir -p dist/stage/tests
             cp .github/velocity-9.22/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.22/patch_android_touch.py dist/stage/patch_android_touch.py
