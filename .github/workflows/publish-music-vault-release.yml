@@ -103,7 +103,7 @@ jobs:
             grep -q 'idx_track_members_member_added' dist/stage/patches/music-vault-9.21.patch
             test -s dist/stage/expected-v920-source.sha256
             test -s dist/stage/tests/test_profile_library.py
-            test "$(grep -c '^diff --git ' dist/stage/patches/music-vault-9.21.patch)" -eq 4
+            test "$(grep -c '^--- a/' dist/stage/patches/music-vault-9.21.patch)" -eq 4
             if unzip -Z1 dist/music-vault-casaos-update.zip | grep -E '(^|/)(music|data|backups|profiles?)/|musicvault\.db'; then
               echo "Unexpected music/database/profile payload found in release ZIP." >&2
               exit 2
