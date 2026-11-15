@@ -85,7 +85,7 @@ jobs:
             cp .github/velocity-9.20/patch_android_touch.py dist/stage/patch_android_touch.py
             cp .github/velocity-9.20/mv920-android-touch.css dist/stage/mv920-android-touch.css
             cp .github/velocity-9.20/tests/test_android_touch.py dist/stage/tests/test_android_touch.py
-            printf '9.20.0\\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            printf '9.20.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
             python3 -m py_compile dist/stage/patch_android_touch.py dist/stage/tests/test_android_touch.py
             python3 dist/stage/tests/test_android_touch.py
             bash -n dist/stage/install-update.sh
