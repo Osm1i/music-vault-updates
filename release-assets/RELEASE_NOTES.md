@@ -1,15 +1,14 @@
-# Music Vault v9.24.1 — Installer compatibility and Home refresh recovery
+# Music Vault v9.25.0 — Recently Added Top Picks layout
 
-This maintenance release corrects the 9.24.0 installer so it does not require an optional Node.js executable on CasaOS. Music Vault's YouTube extraction supports Deno as its preferred JavaScript runtime; server-side browser JavaScript syntax checking is therefore removed from the installer and remains covered by the GitHub build.
+Restyles the Home Recently Added section to match the cleaner Top Picks for You presentation from the supplied screenshot.
 
-- Fixes the 9.24.0 installation failure caused by requiring Node on the CasaOS host even when Deno is the configured YouTube runtime.
-- Improves Home Recently Added recovery: when album cards are absent, it retries the existing Music Vault 7.10 album renderer a few times after load and when returning to Listen Now.
-- Keeps the responsive two-column Recently Added grid on phones.
-- Makes Recently Added “View all” route directly to Library → Albums using the app's actual `mvGoPage` and `mvLibraryTab` functions.
-- Suppresses only the exact Safari detached-DOM NotFoundError from creating the misleading Home error banner; unrelated errors remain visible.
-- Keeps the 9.24.0 yt-dlp throughput options: 8 concurrent HLS/DASH fragments, 10 MiB HTTP chunks where supported, and a 1 MiB buffer, preserving best available source audio and existing metadata processing.
-- Leaves Listen Now, New, Radio, Library, Search, and More navigation intact.
+- Replaces the large two-column album tiles with one horizontally scrollable row of compact, rounded album cards.
+- Uses square inset artwork, subtle gold borders/backgrounds, two-line album titles, and a single-line artist label.
+- Removes the oversized play overlay from the card artwork so the row matches the reference's cleaner presentation.
+- Preserves the existing Recently Added heading, collection count, newest-first ordering, album records, and album-open click handlers.
+- Preserves the View All action and all existing Home, New, Radio, Library, Search, and More navigation.
+- Keeps the existing 9.24.1 Home refresh/error recovery and YouTube downloader settings unchanged.
 
-The installer now reports the exact failed step, line and exit status if anything goes wrong. It backs up app.py, templates/index.html, the new Home assets and the installed-version marker, restarts once, checks Home HTML/assets, primary tabs, the Recently Added API and service health, and restores the backed-up files if validation fails.
+The installer changes only the Home template's versioned stylesheet reference and adds one CSS file. It backs up the template, new stylesheet and installed-version marker, restarts once to refresh Flask/Jinja, checks the live page and served stylesheet, and automatically restores the previous files if a validation fails.
 
-Automated GitHub tests cover the real Music Vault markup/API anchors, Home rendering retry, Albums navigation, exact benign error filtering, download options, idempotency, syntax and preservation of the existing player, service worker, music database and 9.23 player controls. Physical device behavior and actual download speed still require confirmation after installation.
+Automated tests verify the card container, existing album data/click hooks, Home navigation, 9.24.1 asset preservation, horizontal scrolling and compact card styling, plus idempotent patching. Music files, database, app backend, playback bundle, service worker, profiles, playlists, favorites, queue, EQ and downloader settings remain untouched.

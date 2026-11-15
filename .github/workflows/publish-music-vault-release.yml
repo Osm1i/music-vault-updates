@@ -34,6 +34,7 @@ on:
       - ".github/velocity-9.23/**"
       - ".github/velocity-9.24/**"
       - ".github/velocity-9.24.1/**"
+      - ".github/velocity-9.25/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -59,6 +60,7 @@ on:
       - ".github/velocity-9.23/**"
       - ".github/velocity-9.24/**"
       - ".github/velocity-9.24.1/**"
+      - ".github/velocity-9.25/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -89,7 +91,29 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.24.1" ]]; then
+          if [[ "$VERSION" == "9.25.0" ]]; then
+            mkdir -p dist/stage/tests
+            cp .github/velocity-9.25/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.25/patch_recent_added.py dist/stage/patch_recent_added.py
+            cp .github/velocity-9.25/mv925-recent-picks.css dist/stage/mv925-recent-picks.css
+            cp .github/velocity-9.25/tests/test_recent_added.py dist/stage/tests/test_recent_added.py
+            printf '9.25.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/patch_recent_added.py dist/stage/tests/test_recent_added.py
+            python3 dist/stage/tests/test_recent_added.py
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_25_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_25_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_25_0.txt)
+            grep -q '9.25.0' dist/stage/install-update.sh
+            grep -q 'display: flex !important' dist/stage/mv925-recent-picks.css
+            grep -q 'overflow-x: auto !important' dist/stage/mv925-recent-picks.css
+            grep -q 'scroll-snap-type: x mandatory !important' dist/stage/mv925-recent-picks.css
+            grep -q 'data-mv710-home-album' dist/stage/tests/test_recent_added.py
+            test -f dist/stage/tests/test_recent_added.py
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.24.1" ]]; then
             mkdir -p dist/stage/tests
             cp .github/velocity-9.24.1/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.24.1/patch_home_downloads.py dist/stage/patch_home_downloads.py

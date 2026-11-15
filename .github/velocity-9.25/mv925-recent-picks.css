@@ -1,0 +1,117 @@
+/* Music Vault 9.25.0 — make Recently Added match the compact Top Picks carousel. */
+#page-home #recentAlbums.mv710-recent-grid {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  grid-template-columns: none !important;
+  grid-auto-flow: unset !important;
+  grid-auto-columns: unset !important;
+  align-items: stretch !important;
+  align-content: flex-start !important;
+  gap: 13px !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  padding: 3px 1px 12px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  overscroll-behavior-x: contain !important;
+  scroll-snap-type: x mandatory !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-x pan-y pinch-zoom !important;
+}
+#page-home #recentAlbums.mv710-recent-grid::-webkit-scrollbar {
+  display: none !important;
+}
+#page-home #recentAlbums.mv710-recent-grid > .mv710-album-card {
+  appearance: none !important;
+  display: flex !important;
+  flex: 0 0 clamp(112px, 29vw, 132px) !important;
+  width: clamp(112px, 29vw, 132px) !important;
+  min-width: 0 !important;
+  min-height: 190px !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  border: 1px solid color-mix(in srgb, var(--mv81-accent, #e8c15a) 25%, #ffffff12) !important;
+  border-radius: 19px !important;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--mv81-accent, #e8c15a) 12%, #211e17), #10100f 78%) !important;
+  box-shadow: 0 8px 22px #0003 !important;
+  color: #f6f1e8 !important;
+  text-align: left !important;
+  scroll-snap-align: start !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+#page-home #recentAlbums.mv710-recent-grid > .mv710-album-card:active {
+  transform: scale(.985);
+}
+#page-home #recentAlbums.mv710-recent-grid .mv710-album-cover {
+  position: relative !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  border: 1px solid color-mix(in srgb, var(--mv81-accent, #e8c15a) 20%, #ffffff12) !important;
+  border-radius: 13px !important;
+  overflow: hidden !important;
+  background: #211e17 !important;
+  box-shadow: 0 5px 15px #0004 !important;
+}
+#page-home #recentAlbums.mv710-recent-grid .mv710-album-cover img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+#page-home #recentAlbums.mv710-recent-grid .mv710-album-cover > span {
+  display: none !important;
+}
+#page-home #recentAlbums.mv710-recent-grid .mv710-album-card strong {
+  display: -webkit-box !important;
+  min-height: 30px !important;
+  max-height: 32px !important;
+  overflow: hidden !important;
+  color: #f6f1e8 !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  line-height: 1.18 !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+}
+#page-home #recentAlbums.mv710-recent-grid .mv710-album-card small {
+  display: block !important;
+  overflow: hidden !important;
+  color: #a29a8c !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+}
+#page-home #recentAlbums.mv710-recent-grid > .empty {
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  min-height: 0 !important;
+}
+@media (min-width: 761px) {
+  #page-home #recentAlbums.mv710-recent-grid {
+    gap: 15px !important;
+  }
+  #page-home #recentAlbums.mv710-recent-grid > .mv710-album-card {
+    flex-basis: 142px !important;
+    width: 142px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-home #recentAlbums.mv710-recent-grid > .mv710-album-card {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
