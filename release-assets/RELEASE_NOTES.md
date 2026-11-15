@@ -1,12 +1,17 @@
-# Music Vault v9.18.0 — Update Installer Recovery + Android Touch
+# Music Vault v9.19.0 — Fix Flask Template Cache During Updates
 
-This release changes the update method after the 9.16.0 and 9.17.0 installer failures.
+This release fixes the live-validation failure in 9.18.0.
 
-- Removes brittle service-worker source rewriting from the Android touch update. The service worker is left byte-for-byte unchanged.
-- Uses an Android-only stylesheet and idempotent HTML registration; it does not alter player handlers, navigation JavaScript, or the service-worker shell.
-- Uses staged, numbered installer logging so a failed preflight is visible rather than reported only as a generic subprocess error.
-- Removes the brittle hard-coded installed-version gate. The installer validates the live Music Vault layout, package checksums, service health, and served home page before patching.
-- Backs up only the HTML template, the new stylesheet if already present, and the version marker. Automatic rollback restores those files if HTTP or asset verification fails.
-- Does not restart Music Vault. Database, profiles, playlists, queue, EQ, music files, and playback processes are not changed.
+Root cause: Music Vault's Flask/Jinja process can keep the compiled home-page template in memory. The 9.18.0 installer changed the template file and immediately checked the live page without refreshing that template cache, so it could roll back a correct file change.
 
-Validation passed locally: ZIP integrity, SHA-256 checks, Python compilation, Bash syntax, Android CSS/HTML regression tests, idempotent repeat-install simulation, and verification that the service-worker file remains unchanged. A physical Galaxy S26 has not been directly tested.
+Changes:
+- Applies the Android-only touch stylesheet and Android user-agent class.
+- Restarts Music Vault once after the template update to clear the in-memory Flask/Jinja template cache.
+- Waits up to 30 seconds for the systemd service and home page to return.
+- Verifies that the served home page contains the new stylesheet and Android detector.
+- Verifies that the live served CSS bytes exactly match the installed stylesheet.
+- Adds explicit installer stage/error logging so a failure identifies the step that failed.
+- Keeps automatic rollback: if restart or live checks fail, restores the original template, stylesheet and version marker, then restarts the restored app.
+- Leaves the service worker, playback JavaScript, database, profiles, playlists, queue, EQ and music files untouched.
+
+Validation: ZIP integrity, SHA-256 verification, Python compilation, shell syntax, Android touch regression tests, idempotency tests, and installer-order checks passed. The package now refreshes the template cache before checking the live page. A physical Galaxy S26 has not been directly tested.
