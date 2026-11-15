@@ -35,6 +35,7 @@ on:
       - ".github/velocity-9.24/**"
       - ".github/velocity-9.24.1/**"
       - ".github/velocity-9.25/**"
+      - ".github/velocity-9.26/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -61,6 +62,7 @@ on:
       - ".github/velocity-9.24/**"
       - ".github/velocity-9.24.1/**"
       - ".github/velocity-9.25/**"
+      - ".github/velocity-9.26/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -91,7 +93,32 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.25.0" ]]; then
+          if [[ "$VERSION" == "9.26.0" ]]; then
+            mkdir -p dist/stage/tests
+            cp .github/velocity-9.26/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.26/patch_ambient_cards.py dist/stage/patch_ambient_cards.py
+            cp .github/velocity-9.26/mv926-ambient-cards.css dist/stage/mv926-ambient-cards.css
+            cp .github/velocity-9.26/tests/test_ambient_cards.py dist/stage/tests/test_ambient_cards.py
+            printf '9.26.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/patch_ambient_cards.py dist/stage/tests/test_ambient_cards.py
+            python3 dist/stage/tests/test_ambient_cards.py
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_26_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_26_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_26_0.txt)
+            grep -q '9.26.0' dist/stage/install-update.sh
+            grep -q "'format':'bestaudio/best'" dist/stage/patch_ambient_cards.py
+            grep -q "'concurrent_fragment_downloads':12" dist/stage/patch_ambient_cards.py
+            grep -q "'http_chunk_size':10\*1024\*1024" dist/stage/patch_ambient_cards.py
+            grep -q 'mv81-mood-card' dist/stage/mv926-ambient-cards.css
+            grep -q 'mv81-station-card' dist/stage/mv926-ambient-cards.css
+            grep -q 'prefers-reduced-motion: reduce' dist/stage/mv926-ambient-cards.css
+            grep -q "'-c:a','copy'" dist/stage/install-update.sh
+            test -f dist/stage/tests/test_ambient_cards.py
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.25.0" ]]; then
             mkdir -p dist/stage/tests
             cp .github/velocity-9.25/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.25/patch_recent_added.py dist/stage/patch_recent_added.py
