@@ -1,29 +1,13 @@
-# Music Vault v9.26.0 — Ambient Home cards and faster YouTube downloads
+# Music Vault v9.26.1 — 9.26 installer shell-expansion fix
 
-This release gives the artwork-free Home recommendation cards a more animated, living presentation and tunes YouTube download throughput without lowering source-audio quality.
+This maintenance release fixes the 9.26.0 installer failure. The 9.26.0 shell script escaped variable expansion in APP_ROOT, SERVICE, PORT and the installer-directory expression. Bash therefore treated the application root as a literal string instead of resolving `/opt/music-vault`, causing the initial app-layout validation to exit before applying the update.
 
-## Home card animations
+- Corrects Bash variable expansion for the app root, service name, port and staged package directory.
+- Adds build-time assertions that reject escaped shell variable expansion and verify APP_ROOT resolves correctly.
+- Keeps the 9.26.0 animated mood/station cards and reduced-motion fallback.
+- Keeps YouTube HLS/DASH fragment concurrency at 12, 10 MiB HTTP chunks where supported and the 1 MiB buffer.
+- Preserves `bestaudio/best` source selection, metadata/artwork processing and FFmpeg Opus stream-copy remuxing; no lower-quality re-encoding is introduced.
 
-- Adds slow-moving ambient color fields to the large “Playlists Made for You” mood cards.
-- Adds a soft light sweep, floating symbols, expanding halo rings and orbiting accent lights.
-- Gives each mood and station a distinct accent palette.
-- Adds a small animated equalizer accent to “Stations for You” cards.
-- Keeps the cards' existing tap targets, click handlers, swipe rails, content, and section layout intact.
-- Uses transform/opacity-based decorative effects and includes a `prefers-reduced-motion` fallback.
-- Does not animate album artwork, Recently Added cards, the player, or bottom navigation.
+The corrected installer validates the existing app and package before changing files, backs up app.py, templates/index.html, the new stylesheet and version marker, then applies the additive patch and performs live service/asset checks. If a live check fails, it restores the saved files and restarts the previous app.
 
-## YouTube download throughput and audio quality
-
-- Increases yt-dlp HLS/DASH fragment concurrency from 8 to 12.
-- Retains 10 MiB HTTP chunking where the source server supports range/chunk downloads.
-- Retains the 1 MiB download buffer.
-- Keeps the existing `bestaudio/best` source selector, metadata tagging and artwork processing.
-- Keeps WebM/Opus container conversion as FFmpeg stream copy (`-c:a copy`), not audio re-encoding. The original downloaded audio stream is preserved.
-
-Concurrency can improve segmented downloads, while HTTP chunking is an experimental yt-dlp option that may help when a server throttles large transfers; actual speed still depends on the source, format, server and connection.
-
-## Safe installation
-
-The installer backs up app.py, templates/index.html, the new CSS asset and the installed-version marker. It patches only the existing yt-dlp options dictionary and adds a separately versioned Home stylesheet. It restarts once, verifies the live Home page, served stylesheet, downloader settings and service health, and checks that the consolidated player/Home JavaScript and service worker remain byte-for-byte unchanged. If validation fails, it restores the backed-up files and restarts the previous app.
-
-Automated tests cover the actual Home mood/station selectors, reduced-motion fallback, existing layout/renderer preservation, best-audio selection, 12-way fragment concurrency, retained HTTP chunk/buffer settings, metadata pipeline, idempotent application, Python syntax and untouched existing static assets. Physical-device animation and real-world download speed still need confirmation after installation.
+Automated checks test shell variable expansion, package checksum/integrity, Python patch tests, installer syntax, idempotent patching, and preservation of the existing Home/player JavaScript and service worker. The release is published only after the GitHub workflow completes successfully.
