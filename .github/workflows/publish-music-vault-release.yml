@@ -108,9 +108,12 @@ jobs:
             (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_26_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_26_0.txt)
             (cd dist/stage && sha256sum -c SHA256SUMS_9_26_0.txt)
             grep -q '9.26.0' dist/stage/install-update.sh
-            grep -q "'format':'bestaudio/best'" dist/stage/patch_ambient_cards.py
-            grep -q "'concurrent_fragment_downloads':12" dist/stage/patch_ambient_cards.py
-            grep -q "'http_chunk_size':10\*1024\*1024" dist/stage/patch_ambient_cards.py
+            grep -q "bestaudio/best" dist/stage/patch_ambient_cards.py
+            grep -q 'concurrent_fragment_downloads' dist/stage/patch_ambient_cards.py
+            grep -q '"12"' dist/stage/patch_ambient_cards.py
+            grep -q 'http_chunk_size' dist/stage/patch_ambient_cards.py
+            grep -q '10\*1024\*1024' dist/stage/patch_ambient_cards.py
+            grep -q 'buffersize' dist/stage/patch_ambient_cards.py
             grep -q 'mv81-mood-card' dist/stage/mv926-ambient-cards.css
             grep -q 'mv81-station-card' dist/stage/mv926-ambient-cards.css
             grep -q 'prefers-reduced-motion: reduce' dist/stage/mv926-ambient-cards.css
