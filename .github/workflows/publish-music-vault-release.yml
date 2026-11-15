@@ -83,7 +83,9 @@ jobs:
             bash -n dist/stage/install-update.sh
             find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
             (cd dist/stage && sha256sum -c SHA256SUMS_9_17_0.txt)
-            grep -q '9.14.0|9.15.0|9.16.0' dist/stage/install-update.sh
+            grep -q '9.14.0' dist/stage/install-update.sh
+            grep -q '9.15.0' dist/stage/install-update.sh
+            grep -q '9.16.0' dist/stage/install-update.sh
             grep -q 'safe-area-inset-bottom, 0px) + 8px' dist/stage/mv917-android-touch.css
             grep -q 'pointer-events: auto !important' dist/stage/mv917-android-touch.css
             grep -q 'touch-action: manipulation !important' dist/stage/mv917-android-touch.css
