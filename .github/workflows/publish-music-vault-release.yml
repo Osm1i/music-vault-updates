@@ -29,6 +29,7 @@ on:
       - ".github/velocity-9.18-b64/**"
       - ".github/velocity-9.19-b64/**"
       - ".github/velocity-9.20/**"
+      - ".github/velocity-9.21-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -49,6 +50,7 @@ on:
       - ".github/velocity-9.18-b64/**"
       - ".github/velocity-9.19-b64/**"
       - ".github/velocity-9.20/**"
+      - ".github/velocity-9.21-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -79,7 +81,39 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.20.0" ]]; then
+          if [[ "$VERSION" == "9.21.0" ]]; then
+            mkdir -p dist/stage
+            mapfile -t PARTS < <(find .github/velocity-9.21-b64 -maxdepth 1 -type f -name 'part-*.b64' -print | sort)
+            if [ "${#PARTS[@]}" -ne 5 ]; then
+              echo "Expected five ordered Music Vault 9.21.0 package chunks; found ${#PARTS[@]}." >&2
+              exit 2
+            fi
+            for part in "${PARTS[@]}"; do cat "$part"; done > dist/music-vault-9.21.0.b64
+            base64 --decode dist/music-vault-9.21.0.b64 > dist/music-vault-casaos-update.zip
+            unzip -t dist/music-vault-casaos-update.zip
+            unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_21_0.txt)
+            python3 -m py_compile dist/stage/tests/test_profile_library.py
+            bash -n dist/stage/install-update.sh
+            grep -q '9.21.0' dist/stage/install-update.sh
+            grep -q 'expected-v920-source.sha256' dist/stage/install-update.sh
+            grep -q 'patch --dry-run' dist/stage/install-update.sh
+            grep -q 'track_members' dist/stage/patches/music-vault-9.21.patch
+            grep -q 'journal_mode=WAL' dist/stage/patches/music-vault-9.21.patch
+            grep -q 'idx_track_members_member_added' dist/stage/patches/music-vault-9.21.patch
+            test -s dist/stage/expected-v920-source.sha256
+            test -s dist/stage/tests/test_profile_library.py
+            test "$(grep -c '^diff --git ' dist/stage/patches/music-vault-9.21.patch)" -eq 4
+            if unzip -Z1 dist/music-vault-casaos-update.zip | grep -E '(^|/)(music|data|backups|profiles?)/|musicvault\.db'; then
+              echo "Unexpected music/database/profile payload found in release ZIP." >&2
+              exit 2
+            fi
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
+            rm -f dist/music-vault-casaos-update.zip
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.20.0" ]]; then
             mkdir -p dist/stage/tests
             cp .github/velocity-9.20/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.20/patch_android_touch.py dist/stage/patch_android_touch.py
