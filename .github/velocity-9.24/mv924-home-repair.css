@@ -1,0 +1,33 @@
+/* Music Vault 9.24.0 — restore the intended Recently Added album grid on Home. */
+#page-home #recentAlbums.mv710-recent-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)) !important;
+  grid-auto-flow: row !important;
+  grid-auto-columns: unset !important;
+  align-items: start !important;
+  align-content: start !important;
+  overflow: visible !important;
+  overscroll-behavior-x: auto !important;
+  scroll-snap-type: none !important;
+  gap: 16px !important;
+  padding: 2px 0 8px !important;
+  min-height: 0 !important;
+}
+#page-home #recentAlbums.mv710-recent-grid > .mv710-album-card {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+#page-home #recentAlbums.mv710-recent-grid > .empty {
+  grid-column: 1 / -1;
+}
+@media (max-width: 760px) {
+  #page-home #recentAlbums.mv710-recent-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 15px 12px !important;
+  }
+}

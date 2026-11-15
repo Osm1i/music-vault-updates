@@ -32,6 +32,7 @@ on:
       - ".github/velocity-9.21-b64/**"
       - ".github/velocity-9.22/**"
       - ".github/velocity-9.23/**"
+      - ".github/velocity-9.24/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -55,6 +56,7 @@ on:
       - ".github/velocity-9.21-b64/**"
       - ".github/velocity-9.22/**"
       - ".github/velocity-9.23/**"
+      - ".github/velocity-9.24/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -85,7 +87,31 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.23.0" ]]; then
+          if [[ "$VERSION" == "9.24.0" ]]; then
+            mkdir -p dist/stage/tests
+            cp .github/velocity-9.24/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.24/patch_home_downloads.py dist/stage/patch_home_downloads.py
+            cp .github/velocity-9.24/mv924-home-repair.js dist/stage/mv924-home-repair.js
+            cp .github/velocity-9.24/mv924-home-repair.css dist/stage/mv924-home-repair.css
+            cp .github/velocity-9.24/tests/test_home_downloads.py dist/stage/tests/test_home_downloads.py
+            printf '9.24.0\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/patch_home_downloads.py dist/stage/tests/test_home_downloads.py
+            python3 dist/stage/tests/test_home_downloads.py
+            node --check dist/stage/mv924-home-repair.js
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_24_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_24_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_24_0.txt)
+            grep -q '9.24.0' dist/stage/install-update.sh
+            grep -q "'concurrent_fragment_downloads':8" dist/stage/patch_home_downloads.py
+            grep -q "'http_chunk_size':10\*1024\*1024" dist/stage/patch_home_downloads.py
+            grep -q "openLibraryHubCategory('albums')" dist/stage/mv924-home-repair.js
+            grep -q '#page-home #recentAlbums.mv710-recent-grid' dist/stage/mv924-home-repair.css
+            test -f dist/stage/tests/test_home_downloads.py
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.23.0" ]]; then
             mkdir -p dist/stage/tests
             cp .github/velocity-9.23/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.23/patch_player_controls.py dist/stage/patch_player_controls.py
