@@ -1,30 +1,26 @@
-# Music Vault v9.26.2 — installer validation fix and full requested feature preservation
+# Music Vault v9.27.0 — Reliability Center, smarter downloads, library intelligence and playlist controls
 
-This is a corrective replacement for 9.26.0 and 9.26.1. The previous releases had independent installer defects:
-- 9.26.0 escaped shell variables and did not resolve the application/package paths correctly.
-- 9.26.1 still looked for `SHA256SUMS_9_26_0.txt`, while the release builder generated `SHA256SUMS_9_26_1.txt`. The installer therefore stopped during package validation.
+## Reliability Center
+- Adds a Settings dashboard for app-service status, SQLite size, free storage, queue counts, backup age and library diagnostics.
+- Creates daily SQLite online backups, verifies each snapshot with `PRAGMA integrity_check`, retains the newest 10, and offers a manual backup/download action.
+- Library diagnostics report duplicate content-hash groups, same-metadata groups and missing file references.
+- Safe re-index triggers the app's existing scanner. It does not move, delete or re-encode audio files.
 
-This release corrects the checksum filename and adds an end-to-end installer simulation that executes the actual install script against a Music Vault-shaped app directory with mocked service and HTTP commands. It tests both a successful update and a forced live-verification failure that must restore the previous files.
+## Smarter YouTube downloads
+- Keeps `bestaudio/best` as the source selector and retains existing metadata/artwork processing.
+- Adapts HLS/DASH fragment concurrency to CPU and available memory, adds retry/backoff for transient HTTP, fragment and extractor failures, and enables partial-download continuation.
+- Preserves the stream-copy Opus remux path; no forced lossy re-encoding is introduced.
+- Detects YouTube's "Sign in to confirm you're not a bot" response and shows a precise explanation instead of a generic failure.
+- Supports a user's own Netscape-format `cookies.txt` file at `/opt/music-vault/data/youtube-cookies.txt` (or `MUSICVAULT_YOUTUBE_COOKIES`). The file is private, set to mode 600, never included in the release, and never exposed by the app.
+- YouTube's verification is not bypassed. When YouTube challenges a request, the user must provide their own signed-in browser cookies; cookies expire and should never be shared.
 
-## Requested Music Vault features preserved
+## Playlist deletion
+- Adds a Delete action to each profile-owned playlist with a confirmation prompt.
+- The backend validates playlist ownership against the active profile and deletes only playlist rows and their join records.
+- Songs remain in the shared music library; audio files are never deleted.
 
-- Android one-finger scrolling, pan and pinch-zoom compatibility from the earlier Android touch updates.
-- Profile-specific Favorites: the heart fills red when favorited and returns to an outline when removed.
-- Mini-player X: stops playback, clears the Up Next queue and saved player state, and hides the mini-player without deleting the song.
-- Home Recently Added: compact, horizontal Top Picks-style album cards with square artwork, title/artist text and View All.
-- Home recommendation cards: animated ambient lighting, color fields, light sweeps, floating music symbols, glowing rings, orbit effects and station equalizer details, with reduced-motion fallback.
-- YouTube URL downloads: best available audio source selection, 12-way concurrent HLS/DASH fragments, 10 MiB HTTP chunks where supported and a 1 MiB buffer.
-- Original Opus stream-copy remux is retained; this does not re-encode or reduce source audio quality.
-
-The 9.26.2 installer is additive. It updates only the existing yt-dlp options dictionary, adds a separately versioned animation stylesheet and inserts its stylesheet reference in the Home template. It does not replace the consolidated app JavaScript, service worker, existing Android touch stylesheet, Recently Added stylesheet, database, music files or profile/playback data.
-
-## Installer safety and verification
-
-- Validates the exact versioned checksum file (`SHA256SUMS_9_26_2.txt`) before making changes.
-- Verifies the existing Home renderer and mood/station card selectors.
-- Backs up app.py, templates/index.html, the new stylesheet and installed-version marker.
-- Restarts Music Vault once and checks live Home HTML, served CSS, downloader settings, playback JS hash, service worker hash and service health.
-- On any failure, restores the backed-up app files and restarts the previous app.
-- Writes the exact failing step, shell line, exit status and backup path to `data/updates/last-install-failure-9.26.2.txt`.
-
-GitHub checks run Python regression tests, shell syntax validation, checksum and ZIP integrity checks, plus full installer simulations for success and automatic rollback. The release is marked ready only when all checks and GitHub publication succeed.
+## Preservation and safety
+- Existing Android touch fixes, red favorite heart, mini-player X, Recently Added Top Picks layout, animated recommendation cards, playback JS and service worker are preserved.
+- Database, profiles, favorites, listening history and downloaded audio are not replaced.
+- The installer backs up changed application files and the installed-version marker, performs live checks, and restores the previous files on any failed verification.
+- Both the feature regression suite and full installer success/forced-failure rollback simulation must pass before GitHub publishes the ZIP.
