@@ -25,6 +25,7 @@ on:
       - ".github/velocity-9.14/**"
       - ".github/velocity-9.15/**"
       - ".github/velocity-9.16-b64/**"
+      - ".github/velocity-9.17-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -41,6 +42,7 @@ on:
       - ".github/velocity-9.7-b64/**"
       - ".github/velocity-9.8-b64/**"
       - ".github/velocity-9.16-b64/**"
+      - ".github/velocity-9.17-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -71,7 +73,22 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.16.0" ]]; then
+          if [[ "$VERSION" == "9.17.0" ]]; then
+            mkdir -p dist/stage
+            base64 --decode .github/velocity-9.17-b64/part-000.b64 > dist/music-vault-casaos-update.zip
+            unzip -t dist/music-vault-casaos-update.zip
+            unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
+            python3 -m py_compile dist/stage/patch_android_touch.py dist/stage/tests/test_android_touch.py
+            python3 dist/stage/tests/test_android_touch.py
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_17_0.txt)
+            grep -q '9.14.0|9.15.0|9.16.0' dist/stage/install-update.sh
+            grep -q 'safe-area-inset-bottom, 0px) + 8px' dist/stage/mv917-android-touch.css
+            grep -q 'pointer-events: auto !important' dist/stage/mv917-android-touch.css
+            grep -q 'touch-action: manipulation !important' dist/stage/mv917-android-touch.css
+            test -f dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+          elif [[ "$VERSION" == "9.16.0" ]]; then
             mkdir -p dist/stage
             base64 --decode .github/velocity-9.16-b64/part-000.b64 > dist/music-vault-casaos-update.zip
             unzip -t dist/music-vault-casaos-update.zip
