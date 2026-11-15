@@ -105,7 +105,7 @@ jobs:
             python3 -m py_compile dist/stage/patch_ambient_cards.py dist/stage/tests/test_ambient_cards.py
             python3 dist/stage/tests/test_ambient_cards.py
             bash -n dist/stage/install-update.sh
-            if grep -Fq '${' dist/stage/install-update.sh; then
+            if grep -Fq '\${' dist/stage/install-update.sh; then
               echo "Installer contains escaped Bash variable expansion." >&2
               exit 2
             fi
