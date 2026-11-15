@@ -26,6 +26,7 @@ on:
       - ".github/velocity-9.15/**"
       - ".github/velocity-9.16-b64/**"
       - ".github/velocity-9.17-b64/**"
+      - ".github/velocity-9.18-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -43,6 +44,7 @@ on:
       - ".github/velocity-9.8-b64/**"
       - ".github/velocity-9.16-b64/**"
       - ".github/velocity-9.17-b64/**"
+      - ".github/velocity-9.18-b64/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -73,7 +75,20 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.17.0" ]]; then
+          if [[ "$VERSION" == "9.18.0" ]]; then
+            mkdir -p dist/stage
+            base64 --decode .github/velocity-9.18-b64/part-000.b64 > dist/music-vault-casaos-update.zip
+            unzip -t dist/music-vault-casaos-update.zip
+            unzip -oq dist/music-vault-casaos-update.zip -d dist/stage
+            python3 -m py_compile dist/stage/patch_android_touch.py dist/stage/tests/test_android_touch.py
+            python3 dist/stage/tests/test_android_touch.py
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_18_0.txt)
+            grep -q '9.18.0' dist/stage/install-update.sh
+            grep -q 'no service-worker edits' dist/stage/patch_android_touch.py
+            grep -q 'service-worker, playback handlers and existing app assets were not modified' dist/stage/patch_android_touch.py
+          elif [[ "$VERSION" == "9.17.0" ]]; then
             mkdir -p dist/stage
             base64 --decode .github/velocity-9.17-b64/part-000.b64 > dist/music-vault-casaos-update.zip
             unzip -t dist/music-vault-casaos-update.zip
