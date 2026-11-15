@@ -1,0 +1,41 @@
+/* Music Vault 9.20.0 — restore normal Android viewport, touch and scroll behavior. */
+html.mv920-android,
+html.mv920-android body {
+  -ms-touch-action: pan-x pan-y pinch-zoom !important;
+  touch-action: pan-x pan-y pinch-zoom !important;
+}
+html.mv920-android body * {
+  -ms-touch-action: auto !important;
+  touch-action: auto !important;
+}
+html.mv920-android button,
+html.mv920-android a,
+html.mv920-android input,
+html.mv920-android select,
+html.mv920-android textarea,
+html.mv920-android label,
+html.mv920-android [role="button"],
+html.mv920-android [data-action],
+html.mv920-android #mvBottomIsland,
+html.mv920-android .mobile-nav {
+  pointer-events: auto !important;
+  -ms-touch-action: manipulation !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+html.mv920-android button,
+html.mv920-android a,
+html.mv920-android input,
+html.mv920-android select,
+html.mv920-android textarea,
+html.mv920-android [role="button"] {
+  min-width: 44px;
+  min-height: 44px;
+}
+@media (max-width: 900px) and (pointer: coarse) {
+  html.mv920-android #mvBottomIsland {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 8px) !important;
+  }
+}

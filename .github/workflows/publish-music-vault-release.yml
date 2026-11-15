@@ -28,6 +28,7 @@ on:
       - ".github/velocity-9.17-b64/**"
       - ".github/velocity-9.18-b64/**"
       - ".github/velocity-9.19-b64/**"
+      - ".github/velocity-9.20/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -47,6 +48,7 @@ on:
       - ".github/velocity-9.17-b64/**"
       - ".github/velocity-9.18-b64/**"
       - ".github/velocity-9.19-b64/**"
+      - ".github/velocity-9.20/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -77,7 +79,30 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.19.0" ]]; then
+          if [[ "$VERSION" == "9.20.0" ]]; then
+            mkdir -p dist/stage/tests
+            cp .github/velocity-9.20/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.20/patch_android_touch.py dist/stage/patch_android_touch.py
+            cp .github/velocity-9.20/mv920-android-touch.css dist/stage/mv920-android-touch.css
+            cp .github/velocity-9.20/tests/test_android_touch.py dist/stage/tests/test_android_touch.py
+            printf '9.20.0\\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/patch_android_touch.py dist/stage/tests/test_android_touch.py
+            python3 dist/stage/tests/test_android_touch.py
+            bash -n dist/stage/install-update.sh
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_20_0.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_20_0.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_20_0.txt)
+            grep -q '9.20.0' dist/stage/install-update.sh
+            grep -q 'width=device-width, initial-scale=1, viewport-fit=cover' dist/stage/patch_android_touch.py
+            grep -q 'touch-action: pan-x pan-y pinch-zoom !important' dist/stage/mv920-android-touch.css
+            grep -q 'touch-action: auto !important' dist/stage/mv920-android-touch.css
+            grep -q 'systemctl restart "$SERVICE"' dist/stage/install-update.sh
+            grep -q 'rollback' dist/stage/install-update.sh
+            test -f dist/stage/tests/test_android_touch.py
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.19.0" ]]; then
             mkdir -p dist/stage
             base64 --decode .github/velocity-9.19-b64/part-000.b64 > dist/music-vault-casaos-update.zip
             unzip -t dist/music-vault-casaos-update.zip

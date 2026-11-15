@@ -1,17 +1,15 @@
-# Music Vault v9.19.0 — Fix Flask Template Cache During Updates
+# Music Vault v9.20.0 — Android viewport and touch recovery
 
-This release fixes the live-validation failure in 9.18.0.
-
-Root cause: Music Vault's Flask/Jinja process can keep the compiled home-page template in memory. The 9.18.0 installer changed the template file and immediately checked the live page without refreshing that template cache, so it could roll back a correct file change.
+This release fixes the Android app's desktop-width/zoomed viewport behavior and restores standard one-finger interaction across the interface.
 
 Changes:
-- Applies the Android-only touch stylesheet and Android user-agent class.
-- Restarts Music Vault once after the template update to clear the in-memory Flask/Jinja template cache.
-- Waits up to 30 seconds for the systemd service and home page to return.
-- Verifies that the served home page contains the new stylesheet and Android detector.
-- Verifies that the live served CSS bytes exactly match the installed stylesheet.
-- Adds explicit installer stage/error logging so a failure identifies the step that failed.
-- Keeps automatic rollback: if restart or live checks fail, restores the original template, stylesheet and version marker, then restarts the restored app.
-- Leaves the service worker, playback JavaScript, database, profiles, playlists, queue, EQ and music files untouched.
+- Ensures there is exactly one mobile viewport declaration using the device width, so responsive layouts and touch-sized controls activate on Android.
+- Removes restrictive legacy viewport settings such as a forced desktop width or disabled user zoom.
+- Restores native horizontal/vertical panning and pinch zoom on Android, while keeping buttons, links and form controls directly touchable.
+- Retains the bottom navigation safe-area adjustment and 44px minimum control targets.
+- Replaces the prior Android touch hook/style without changing Music Vault playback JavaScript or the service worker.
+- Backs up the exact template, touch stylesheet and installed-version marker before applying changes.
+- Restarts Music Vault once to refresh Flask/Jinja's cached template, then verifies the served HTML, stylesheet bytes and service health.
+- Automatically restores the backed-up files and restarts the previous app if a live check fails.
 
-Validation: ZIP integrity, SHA-256 verification, Python compilation, shell syntax, Android touch regression tests, idempotency tests, and installer-order checks passed. The package now refreshes the template cache before checking the live page. A physical Galaxy S26 has not been directly tested.
+Validation: package regression tests, Python compilation, shell syntax, idempotency checks, viewport normalization tests, untouched-player/service-worker checks, SHA-256 verification and ZIP integrity verification run before publication. Physical-device touch behavior still requires confirmation on the affected Android screen.
