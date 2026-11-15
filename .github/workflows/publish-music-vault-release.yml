@@ -87,7 +87,7 @@ jobs:
             (cd dist/stage && sha256sum -c SHA256SUMS_9_18_0.txt)
             grep -q '9.18.0' dist/stage/install-update.sh
             grep -q 'no service-worker edits' dist/stage/patch_android_touch.py
-            grep -q 'service-worker, playback handlers and existing app assets were not modified' dist/stage/patch_android_touch.py
+            grep -q 'service worker, playback handlers and existing app assets were not modified' dist/stage/patch_android_touch.py
           elif [[ "$VERSION" == "9.17.0" ]]; then
             mkdir -p dist/stage
             base64 --decode .github/velocity-9.17-b64/part-000.b64 > dist/music-vault-casaos-update.zip
