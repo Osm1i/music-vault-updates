@@ -122,7 +122,7 @@ jobs:
             grep -q 'fragment_retries' dist/stage/patch_v927_features.py
             grep -q 'cookiefile' dist/stage/patch_v927_features.py
             grep -Fq "methods=['DELETE']" dist/stage/patch_v927_features.py
-            grep -q 'mv927Reliability' dist/stage/mv927-reliability.js
+            grep -q 'mv927LoadReliability' dist/stage/mv927-reliability.js
             test -f dist/stage/tests/test_v927_features.py
             test -f dist/stage/tests/test_installer_e2e.py
             (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
