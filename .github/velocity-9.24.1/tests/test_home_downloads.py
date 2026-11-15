@@ -45,12 +45,10 @@ js = (ROOT / JS_FILE).read_text(encoding='utf-8')
 css = (ROOT / CSS_FILE).read_text(encoding='utf-8')
 for token in ('#page-home #recentAlbums.mv710-recent-grid', 'display: grid !important', 'grid-template-columns: repeat(2, minmax(0, 1fr))'):
     assert token in css, token
-for token in ('scheduleHomeRepair', 'renderHomeAlbums(true)', "window.mvLibraryTab('albums')", 'isBenignDetachedObjectError', 'The object can not be found here', 'window.mv923ClearPlayer', 'MusicVault9241'):
+for token in ('scheduleHomeRepair', 'renderer(true)', "window.mvLibraryTab('albums')", 'isBenignDetachedObjectError', 'The object can not be found here', 'window.mv923ClearPlayer', 'MusicVault9241'):
     assert token in js, token
+assert 'node --check' not in (ROOT / 'install-update.sh').read_text(encoding='utf-8')
 
-# This script is browser JS. GitHub CI syntax-checks it with Node; the CasaOS
-# installer deliberately does not require Node because Deno is the supported
-# yt-dlp runtime and Node is optional.
 node = subprocess.run(['node', '--version'], capture_output=True, text=True)
 if node.returncode == 0:
     subprocess.run(['node', '--check', str(ROOT / JS_FILE)], check=True)
@@ -71,11 +69,11 @@ with tempfile.TemporaryDirectory() as td:
     ):
         (app / 'static' / name).write_text(content, encoding='utf-8')
     before = {p.name: p.read_bytes() for p in (app / 'static').iterdir()}
-
     package = Path(td) / 'package'
     package.mkdir()
     for file in (ROOT / 'patch_home_downloads.py', ROOT / JS_FILE, ROOT / CSS_FILE):
         shutil.copy2(file, package / file.name)
+    shutil.copy2(ROOT / 'install-update.sh', package / 'install-update.sh')
     spec = importlib.util.spec_from_file_location('mv9241_patcher_copy', package / 'patch_home_downloads.py')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -91,4 +89,4 @@ with tempfile.TemporaryDirectory() as td:
     assert (app / 'static' / CSS_FILE).is_file()
     compile((app / 'app.py').read_text(encoding='utf-8'), str(app / 'app.py'), 'exec')
 
-print('PASS: real Home/navigation anchors, forced Home album refresh, Albums tab routing, exact Safari NotFoundError filtering, faster yt-dlp settings, idempotency, Python syntax and unchanged existing playback/service-worker assets.')
+print('PASS: real Home/navigation anchors, Home album renderer retry, Albums navigation, exact Safari error filtering, faster yt-dlp settings, idempotency, Python syntax and preservation of existing player/service-worker assets.')
