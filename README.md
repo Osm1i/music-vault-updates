@@ -7,4 +7,4 @@ Public release channel for Music Vault Vanguard on CasaOS.
 - Release packages are rebuilt, syntax-checked, checksummed and published as GitHub Releases.
 - The app's music, database, profiles and server configuration remain on the user's CasaOS host.
 
-Latest stable release: **9.24.0** — Recently Added layout repair and faster URL downloads.
+Latest stable release: **9.24.1** — Installer compatibility and Home refresh recovery.

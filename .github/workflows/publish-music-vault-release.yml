@@ -33,6 +33,7 @@ on:
       - ".github/velocity-9.22/**"
       - ".github/velocity-9.23/**"
       - ".github/velocity-9.24/**"
+      - ".github/velocity-9.24.1/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   pull_request:
@@ -57,6 +58,7 @@ on:
       - ".github/velocity-9.22/**"
       - ".github/velocity-9.23/**"
       - ".github/velocity-9.24/**"
+      - ".github/velocity-9.24.1/**"
       - "release-assets/RELEASE_NOTES.md"
       - ".github/workflows/publish-music-vault-release.yml"
   workflow_dispatch:
@@ -87,7 +89,36 @@ jobs:
           rm -rf dist
           mkdir -p dist
 
-          if [[ "$VERSION" == "9.24.0" ]]; then
+          if [[ "$VERSION" == "9.24.1" ]]; then
+            mkdir -p dist/stage/tests
+            cp .github/velocity-9.24.1/install-update.sh dist/stage/install-update.sh
+            cp .github/velocity-9.24.1/patch_home_downloads.py dist/stage/patch_home_downloads.py
+            cp .github/velocity-9.24.1/mv9241-home-repair.js dist/stage/mv9241-home-repair.js
+            cp .github/velocity-9.24.1/mv9241-home-repair.css dist/stage/mv9241-home-repair.css
+            cp .github/velocity-9.24.1/tests/test_home_downloads.py dist/stage/tests/test_home_downloads.py
+            printf '9.24.1\n' > dist/stage/MUSIC_VAULT_RELEASE_VERSION.txt
+            python3 -m py_compile dist/stage/patch_home_downloads.py dist/stage/tests/test_home_downloads.py
+            python3 dist/stage/tests/test_home_downloads.py
+            node --check dist/stage/mv9241-home-repair.js
+            bash -n dist/stage/install-update.sh
+            if grep -q 'node --check' dist/stage/install-update.sh; then
+              echo "Installer must not require Node.js on the CasaOS host." >&2
+              exit 2
+            fi
+            find dist/stage -type d -name __pycache__ -prune -exec rm -rf {} +
+            find dist/stage -type f -name '*.pyc' -delete
+            (cd dist/stage && find . -type f ! -name 'SHA256SUMS_9_24_1.txt' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS_9_24_1.txt)
+            (cd dist/stage && sha256sum -c SHA256SUMS_9_24_1.txt)
+            grep -q '9.24.1' dist/stage/install-update.sh
+            grep -q "'concurrent_fragment_downloads':8" dist/stage/patch_home_downloads.py
+            grep -q "'http_chunk_size':10\*1024\*1024" dist/stage/patch_home_downloads.py
+            grep -q "window.mvLibraryTab('albums')" dist/stage/mv9241-home-repair.js
+            grep -q '#page-home #recentAlbums.mv710-recent-grid' dist/stage/mv9241-home-repair.css
+            grep -q 'INSTALLER_FAILURE\|FAILURE: step=' dist/stage/install-update.sh
+            test -f dist/stage/tests/test_home_downloads.py
+            (cd dist/stage && zip -X -qr ../music-vault-casaos-update.zip .)
+            unzip -t dist/music-vault-casaos-update.zip
+          elif [[ "$VERSION" == "9.24.0" ]]; then
             mkdir -p dist/stage/tests
             cp .github/velocity-9.24/install-update.sh dist/stage/install-update.sh
             cp .github/velocity-9.24/patch_home_downloads.py dist/stage/patch_home_downloads.py
